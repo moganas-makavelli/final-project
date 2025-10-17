@@ -2,15 +2,17 @@
 // 1. FIREBASE SETUP & INITIALIZATION
 // ====================================================================
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration - MODIFIED TO USE PLACEHOLDERS
 const firebaseConfig = {
-    apiKey: "AIzaSyAFMCzgTrptchIhSSG8Vdx111T3zMpht6A",
-    authDomain: "financial-dashboard-app-cbbf4.firebaseapp.com",
-    projectId: "financial-dashboard-app-cbbf4",
-    storageBucket: "financial-dashboard-app-cbbf4.firebasestorage.app",
-    messagingSenderId: "655956146251",
-    appId: "1:655956146251:web:b435ce1fbdfa9a34f4f5ce",
-    measurementId: "G-02L6EP6ZKM"
+    // IMPORTANT: THESE VALUES ARE INJECTED SECURELY BY VERCEL ENVIRONMENT VARIABLES
+    apiKey: "__FIREBASE_API_KEY__", // New placeholder
+    authDomain: "__FIREBASE_AUTH_DOMAIN__", // New placeholder
+    projectId: "__FIREBASE_PROJECT_ID__", // New placeholder
+    storageBucket: "__FIREBASE_STORAGE_BUCKET__", // New placeholder
+    messagingSenderId: "__FIREBASE_MESSAGING_SENDER_ID__", // New placeholder
+    appId: "__FIREBASE_APP_ID__", // New placeholder
+    measurementId: "__FIREBASE_MEASUREMENT_ID__" // New placeholder
+
 };
 
 // Initialize Firebase

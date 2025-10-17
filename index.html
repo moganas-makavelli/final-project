@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+
+<body>
+
+    <div id="authModal" class="modal active-modal">
+        <div class="modal-content">
+            <h3 id="authTitle">Login to Financial Dashboard</h3>
+            <form id="authForm">
+                <label for="authEmail">Email</label>
+                <input type="email" id="authEmail" required>
+
+                <label for="authPassword">Password</label>
+                <input type="password" id="authPassword" required>
+
+                <div id="confirmPasswordGroup" style="display: none;">
+                    <label for="authConfirmPassword">Confirm Password</label>
+                    <input type="password" id="authConfirmPassword">
+                </div>
+
+                <p id="authMessage" class="error-message" style="display: none;"></p>
+
+                <div class="modal-actions">
+                    <button type="submit" id="authSubmitBtn" class="save-btn">Login</button>
+                </div>
+            </form>
+            <p class="auth-toggle">
+                Don't have an account? <a href="#" id="toggleSignup">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="app-dashboard" style="display: none;">
+
+        <div class="sidebar">
+            <h1 class="logo">FinDash.</h1>
+            <ul class="menu">
+                <li class="active" data-section="dashboard-section">Dashboard</li>
+                <li data-section="transactions-section">All Transactions</li>
+                <li data-section="reports-section">Reports</li>
+                <li data-section="settings-section">Settings</li>
+                <li id="logoutBtn">Logout</li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+
+            <header>
+                <h2>Welcome back, <span id="userName">Guest</span>!</h2>
+                <button class="add-transaction">+</button>
+            </header>
+
+            <div id="dashboard-section" class="content-section active-section">
+
+                <div class="cards">
+
+                    <div class="card balance-card">
+                        <h3>Current Balance</h3>
+                        <p class="amount">KSh 0.00</p>
+                        <p id="netSavingsEl" class="net-savings">
+                            Net Change:
+                            <span class="net-value">KSh 0.00</span>
+                        </p>
+                    </div>
+
+                    <div class="card income-card">
+                        <h3>Total Income</h3>
+                        <p class="income"><span>+KSh 0.00</span></p>
+                        <p class="small-text">Current Period</p>
+                    </div>
+
+                    <div class="card expenses-card">
+                        <h3>Total Expenses</h3>
+                        <p class="expenses"><span>-KSh 0.00</span></p>
+                        <p class="small-text">Current Period</p>
+                    </div>
+
+                    <div class="card limit-card">
+                        <h3>Daily Limit</h3>
+                        <p>KSh 0.00 Used</p>
+                        <div class="progress-bar">
+                            <div class="progress" id="limitProgress"></div>
+                        </div>
+                        <p class="small-text">100% remaining</p>
+                    </div>
+                </div>
+
+                <div class="chart-and-transactions">
+
+                    <div class="chart-section">
+                        <h3>Expense Summary by Category</h3>
+                        <canvas id="expensesChart"></canvas>
+                    </div>
+
+                    <div class="transactions-section">
+                        <h3>Recent Transactions</h3>
+                        <ul id="transactionList">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="transactions-section" class="content-section">
+                <h3>All Transactions</h3>
+                <ul id="allTransactionList">
+                </ul>
+            </div>
+
+            <div id="reports-section" class="content-section">
+                <h3>Financial Reports</h3>
+                <p class="section-description">This area will feature advanced charts and downloadable monthly
+                    summaries.</p>
+
+                <div class="report-option">
+                    <h4>Monthly Expense Breakdown</h4>
+                    <p>View a detailed breakdown of your spending habits by category over the last 30 days.</p>
+                    <button class="save-btn small">Generate Report</button>
+                </div>
+
+                <div class="report-option">
+                    <h4>Income vs. Expenses Trend</h4>
+                    <p>Analyze your long-term cash flow trends over the past six months.</p>
+                    <button class="save-btn small">View Trend</button>
+                </div>
+            </div>
+
+            <div id="settings-section" class="content-section">
+                <h3>Settings</h3>
+                <p class="section-description">Manage your account preferences and application data.</p>
+
+                <form id="userSettingsForm" class="settings-form">
+                    <h4>Profile Settings</h4>
+                    <label for="displayName">Display Name</label>
+                    <input type="text" id="displayName" placeholder="Enter your preferred display name">
+
+                    <h4>Budget Limits (KSh)</h4>
+                    <label for="dailyLimitInput">Daily Expense Limit</label>
+                    <input type="number" id="dailyLimitInput" value="10000" min="100" step="100" required>
+
+                    <div class="modal-actions">
+                        <button type="submit" class="save-btn">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Transaction</h3>
+            <form id="transactionForm">
+
+                <label for="description">Description</label>
+                <input type="text" id="description" placeholder="e.g., Dinner with friends" required>
+
+                <label for="type">Type</label>
+                <select id="type" required>
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                </select>
+
+                <label for="category">Category</label>
+                <select id="category" required>
+                    <option value="Food">Food</option>
+                    <option value="Groceries">Groceries</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Other">Other</option>
+                    <option value="Salary" data-type="income">Salary</option>
+                    <option value="Investment" data-type="income">Investment</option>
+                </select>
+
+                <label for="amount">Amount</label>
+                <div class="amount-input-wrapper">
+                    <span class="currency-prefix">KSh</span>
+                    <input type="number" id="amount" placeholder="500.00" min="0.01" step="0.01" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="closeModal" class="close-btn">Cancel</button>
+                    <button type="submit" id="saveTransactionBtn" class="save-btn">Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="logoutConfirmModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out of your financial dashboard?</p>
+            <div class="modal-actions">
+                <button type="button" id="cancelLogoutBtn" class="close-btn">Cancel</button>
+                <button type="button" id="confirmLogoutBtn" class="save-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastNotification" class="toast">
+        ✅ Transaction saved successfully.
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

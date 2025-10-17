@@ -1,0 +1,595 @@
+/* General Setup */
+:root {
+    --primary-color: #2563eb;
+    /* Blue */
+    --secondary-color: #f59e0b;
+    /* Amber/Yellow */
+    --background-dark: #0f172a;
+    /* Slate 900 */
+    --surface-dark: #1e293b;
+    /* Slate 800 */
+    --text-light: #f8fafc;
+    /* Slate 50 */
+    --text-secondary: #94a3b8;
+    /* Slate 400 */
+    --green-color: #10b981;
+    /* Emerald 500 (Income/Savings) */
+    --red-color: #ef4444;
+    /* Red 500 (Expenses/Loss) */
+    --border-color: #334155;
+    /* Slate 700 */
+    --shadow-color: rgba(0, 0, 0, 0.4);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-dark);
+    color: var(--text-light);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ------------------------------ */
+/* 1. Dashboard Layout & Navigation */
+/* ------------------------------ */
+
+#app-dashboard {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--surface-dark);
+    padding: 2rem 1.5rem;
+    box-shadow: 2px 0 5px var(--shadow-color);
+    flex-shrink: 0;
+}
+
+.logo {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 3rem;
+    color: var(--text-light);
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+}
+
+.menu li {
+    padding: 1rem 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.menu li:hover {
+    background-color: #334155;
+    /* Slate 700 */
+    color: var(--text-light);
+}
+
+.menu li.active {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 2rem 3rem;
+    overflow-y: auto;
+    position: relative;
+    /* Needed for FAB */
+}
+
+.content-section {
+    display: none;
+    opacity: 0;
+    /* Subtle transition effect */
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transform: translateY(10px);
+}
+
+.content-section.active-section {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ------------------------------ */
+/* 2. Header & Floating Action Button (FAB) */
+/* ------------------------------ */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    position: relative;
+    /* To keep the header structure */
+}
+
+header h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+}
+
+/* FAB Styling */
+.add-transaction {
+    position: fixed;
+    /* Fixed position */
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border: none;
+    border-radius: 50%;
+    /* Circle shape */
+    cursor: pointer;
+    font-size: 2rem;
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 990;
+    /* Above most elements */
+    line-height: 50px;
+    text-align: center;
+    padding: 0;
+}
+
+.add-transaction:hover {
+    background-color: #1d4ed8;
+    /* Blue 700 */
+    transform: scale(1.05);
+}
+
+/* Hide header button on small screens where FAB takes over */
+@media (max-width: 768px) {
+    header .add-transaction {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        margin-top: 1rem;
+        box-shadow: none;
+    }
+
+    /* Move FAB to a more central, traditional button spot on mobile headers */
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+
+/* ------------------------------ */
+/* 3. Cards & Stats */
+/* ------------------------------ */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.card {
+    background-color: var(--surface-dark);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+}
+
+.card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+/* Balance Card Styling */
+.balance-card .amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-light);
+}
+
+/* Net Savings Styling */
+.net-savings {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.net-value.positive {
+    color: var(--green-color);
+    font-weight: 700;
+}
+
+.net-value.negative {
+    color: var(--red-color);
+    font-weight: 700;
+}
+
+
+.green {
+    color: var(--green-color);
+    font-weight: 600;
+}
+
+.red {
+    color: var(--red-color);
+    font-weight: 600;
+}
+
+/* Limit/Progress Bar Card */
+.limit-card p:first-of-type {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.progress-bar {
+    background-color: var(--border-color);
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.progress {
+    height: 100%;
+    background-color: var(--secondary-color);
+    transition: width 0.5s ease-in-out, background-color 0.3s ease;
+}
+
+/* Progress Bar Warning Color */
+.progress.warning {
+    background-color: var(--red-color);
+}
+
+
+/* ------------------------------ */
+/* 4. Transactions List (Icons) */
+/* ------------------------------ */
+
+.transactions-section h3 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+#transactionList,
+#allTransactionList {
+    list-style: none;
+    padding: 0;
+}
+
+#transactionList li,
+#allTransactionList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1rem;
+    /* Increased padding for better touch targets */
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1rem;
+    color: var(--text-light);
+    transition: background-color 0.2s;
+}
+
+#transactionList li:last-child,
+#allTransactionList li:last-child {
+    border-bottom: none;
+}
+
+#transactionList li:hover,
+#allTransactionList li:hover {
+    background-color: #172554;
+    /* Blue 900 slightly darker */
+}
+
+/* ------------------------------ */
+/* 5. Modals & Forms (Input Styling) */
+/* ------------------------------ */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active-modal {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--surface-dark);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    border: 1px solid var(--border-color);
+}
+
+/* Standard Input Styling */
+.modal-content input[type="text"],
+.modal-content input[type="number"],
+.modal-content input[type="email"],
+.modal-content input[type="password"],
+.modal-content select,
+.settings-form input[type="text"],
+.settings-form input[type="number"] {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-dark);
+    color: var(--text-light);
+    font-size: 1rem;
+    /* Focus Ring Styling */
+    outline: none;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+/* Focus Ring Style */
+.modal-content input:focus,
+.modal-content select:focus,
+.settings-form input:focus,
+.save-btn:focus,
+.close-btn:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
+    /* Primary color glow */
+}
+
+/* KSh Prefix Wrapper Styling */
+.amount-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.amount-input-wrapper .currency-prefix {
+    position: absolute;
+    left: 12px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    z-index: 10;
+}
+
+.amount-input-wrapper input {
+    padding-left: 55px;
+    /* Shift input content past the 'KSh ' prefix */
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.save-btn,
+.close-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: opacity 0.2s;
+}
+
+.save-btn {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+}
+
+.save-btn:hover {
+    opacity: 0.9;
+}
+
+.close-btn {
+    background-color: var(--text-secondary);
+    color: var(--background-dark);
+}
+
+.close-btn:hover {
+    opacity: 0.9;
+}
+
+/* Logout Confirmation Modal Style */
+#logoutConfirmModal .modal-content {
+    max-width: 350px;
+    text-align: center;
+}
+
+#logoutConfirmModal p {
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+}
+
+#confirmLogoutBtn {
+    background-color: var(--red-color);
+}
+
+#confirmLogoutBtn:hover {
+    background-color: #c72b2b;
+}
+
+/* ------------------------------ */
+/* 6. Settings & Reports Section Styling (NEW) */
+/* ------------------------------ */
+
+.section-description {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.settings-form,
+.report-option {
+    background-color: var(--surface-dark);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+}
+
+.settings-form h4,
+.report-option h4 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.settings-form label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.settings-form .modal-actions {
+    justify-content: flex-start;
+    margin-top: 1.5rem;
+}
+
+.report-option p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* ------------------------------ */
+/* 7. Toast Notification */
+/* ------------------------------ */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: -350px;
+    /* Hidden off-screen initially */
+    background-color: var(--green-color);
+    color: var(--background-dark);
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+    z-index: 1100;
+    transition: right 0.3s ease-in-out;
+}
+
+.toast.show {
+    right: 20px;
+}
+
+
+/* ------------------------------ */
+/* 8. Responsive Design */
+/* ------------------------------ */
+
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        padding: 1.5rem 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #app-dashboard {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 1rem;
+        box-shadow: 0 2px 5px var(--shadow-color);
+        order: -1;
+    }
+
+    .sidebar .logo {
+        display: none;
+    }
+
+    .menu {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.5rem;
+    }
+
+    .menu li {
+        flex-shrink: 0;
+        margin-right: 1rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .main-content {
+        padding: 1.5rem;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    /* Move FAB to top on small screens to be an 'Add' button in the header */
+    .add-transaction {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        margin-top: 1rem;
+        box-shadow: none;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

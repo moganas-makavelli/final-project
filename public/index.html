@@ -2,34 +2,36 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Financial Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 </head>
 
 <body>
-
+    <!-- ======================================================
+       AUTH MODAL (LOGIN / SIGNUP)
+  ====================================================== -->
     <div id="authModal" class="modal active-modal">
         <div class="modal-content">
             <h3 id="authTitle">Login to Financial Dashboard</h3>
             <form id="authForm">
                 <label for="authEmail">Email</label>
-                <input type="email" id="authEmail" required>
+                <input type="email" id="authEmail" required />
 
                 <label for="authPassword">Password</label>
-                <input type="password" id="authPassword" required>
+                <input type="password" id="authPassword" required />
 
-                <div id="confirmPasswordGroup" style="display: none;">
+                <div id="confirmPasswordGroup" style="display: none">
                     <label for="authConfirmPassword">Confirm Password</label>
-                    <input type="password" id="authConfirmPassword">
+                    <input type="password" id="authConfirmPassword" />
                 </div>
 
-                <p id="authMessage" class="error-message" style="display: none;"></p>
+                <p id="authMessage" class="error-message" style="display: none"></p>
 
                 <div class="modal-actions">
                     <button type="submit" id="authSubmitBtn" class="save-btn">Login</button>
@@ -41,8 +43,10 @@
         </div>
     </div>
 
-    <div id="app-dashboard" style="display: none;">
-
+    <!-- ======================================================
+       MAIN DASHBOARD SECTION
+  ====================================================== -->
+    <div id="app-dashboard" style="display: none">
         <div class="sidebar">
             <h1 class="logo">FinDash.</h1>
             <ul class="menu">
@@ -50,27 +54,25 @@
                 <li data-section="transactions-section">All Transactions</li>
                 <li data-section="reports-section">Reports</li>
                 <li data-section="settings-section">Settings</li>
+                <li data-section="aiCoachSection">🧠 AI Coach</li>
                 <li id="logoutBtn">Logout</li>
             </ul>
         </div>
 
         <div class="main-content">
-
             <header>
                 <h2>Welcome back, <span id="userName">Guest</span>!</h2>
                 <button class="add-transaction">+</button>
             </header>
 
+            <!-- DASHBOARD SECTION -->
             <div id="dashboard-section" class="content-section active-section">
-
                 <div class="cards">
-
                     <div class="card balance-card">
                         <h3>Current Balance</h3>
                         <p class="amount">KSh 0.00</p>
                         <p id="netSavingsEl" class="net-savings">
-                            Net Change:
-                            <span class="net-value">KSh 0.00</span>
+                            Net Change: <span class="net-value">KSh 0.00</span>
                         </p>
                     </div>
 
@@ -88,83 +90,124 @@
 
                     <div class="card limit-card">
                         <h3>Daily Limit</h3>
-                        <p>KSh 0.00 Used</p>
+                        <p id="limitUsed">KSh 0.00 Used</p>
                         <div class="progress-bar">
                             <div class="progress" id="limitProgress"></div>
                         </div>
-                        <p class="small-text">100% remaining</p>
+                        <p class="small-text" id="limitRemaining">100% remaining</p>
                     </div>
                 </div>
 
                 <div class="chart-and-transactions">
-
                     <div class="chart-section">
                         <h3>Expense Summary by Category</h3>
                         <canvas id="expensesChart"></canvas>
                     </div>
 
                     <div class="transactions-section">
-                        <h3>Recent Transactions</h3>
-                        <ul id="transactionList">
-                        </ul>
+                        <div class="transaction-header">
+                            <h3>Recent Transactions</h3>
+                            <select id="filterCategory">
+                                <option value="all">All</option>
+                                <option value="Food">Food</option>
+                                <option value="Groceries">Groceries</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Travel">Travel</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Investment">Investment</option>
+                            </select>
+                        </div>
+                        <ul id="transactionList"></ul>
                     </div>
                 </div>
             </div>
 
+            <!-- AI COACH SECTION -->
+            <section id="aiCoachSection" class="content-section" style="display: none">
+                <h2>🧠 Your Financial Coach</h2>
+                <div class="ai-chat-box">
+                    <div id="aiChatOutput" class="chat-output">
+                        <p>
+                            Hello! I’m your AI coach. You can ask me about your financial habits,
+                            savings goals, or how to optimize your spending.
+                        </p>
+                    </div>
+                    <form id="aiChatForm" class="chat-input">
+                        <input type="text" id="aiQuestionInput" placeholder="Ask your question here..." required />
+                        <button type="submit">Ask</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ALL TRANSACTIONS SECTION -->
             <div id="transactions-section" class="content-section">
                 <h3>All Transactions</h3>
-                <ul id="allTransactionList">
-                </ul>
+                <div class="transaction-filters">
+                    <input type="month" id="filterMonth" />
+                    <select id="filterType">
+                        <option value="all">All Types</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <ul id="allTransactionList"></ul>
             </div>
 
+            <!-- REPORTS SECTION -->
             <div id="reports-section" class="content-section">
                 <h3>Financial Reports</h3>
-                <p class="section-description">This area will feature advanced charts and downloadable monthly
-                    summaries.</p>
+                <p class="section-description">
+                    Generate summaries and visual insights of your finances.
+                </p>
 
                 <div class="report-option">
                     <h4>Monthly Expense Breakdown</h4>
-                    <p>View a detailed breakdown of your spending habits by category over the last 30 days.</p>
-                    <button class="save-btn small">Generate Report</button>
+                    <p>View a detailed breakdown of your spending habits by category.</p>
+                    <button id="generateReportBtn" class="save-btn small">
+                        Generate Report
+                    </button>
                 </div>
 
                 <div class="report-option">
                     <h4>Income vs. Expenses Trend</h4>
-                    <p>Analyze your long-term cash flow trends over the past six months.</p>
-                    <button class="save-btn small">View Trend</button>
+                    <p>Analyze your cash flow trends over the past months.</p>
+                    <button id="viewTrendBtn" class="save-btn small">View Trend</button>
                 </div>
+
+                <canvas id="trendChart" style="margin-top: 20px"></canvas>
+                <div id="reportOutput"></div>
             </div>
 
+            <!-- SETTINGS SECTION -->
             <div id="settings-section" class="content-section">
                 <h3>Settings</h3>
-                <p class="section-description">Manage your account preferences and application data.</p>
-
+                <p class="section-description">Manage your preferences and limits.</p>
                 <form id="userSettingsForm" class="settings-form">
                     <h4>Profile Settings</h4>
                     <label for="displayName">Display Name</label>
-                    <input type="text" id="displayName" placeholder="Enter your preferred display name">
+                    <input type="text" id="displayName" placeholder="Enter your preferred display name" />
 
                     <h4>Budget Limits (KSh)</h4>
                     <label for="dailyLimitInput">Daily Expense Limit</label>
-                    <input type="number" id="dailyLimitInput" value="10000" min="100" step="100" required>
+                    <input type="number" id="dailyLimitInput" value="10000" min="100" step="100" required />
 
                     <div class="modal-actions">
                         <button type="submit" class="save-btn">Save Settings</button>
                     </div>
                 </form>
             </div>
-
         </div>
-
     </div>
 
+    <!-- TRANSACTION MODAL -->
     <div id="transactionModal" class="modal">
         <div class="modal-content">
             <h3>Add New Transaction</h3>
             <form id="transactionForm">
-
                 <label for="description">Description</label>
-                <input type="text" id="description" placeholder="e.g., Dinner with friends" required>
+                <input type="text" id="description" placeholder="e.g., Dinner with friends" required />
 
                 <label for="type">Type</label>
                 <select id="type" required>
@@ -181,43 +224,52 @@
                     <option value="Travel">Travel</option>
                     <option value="Entertainment">Entertainment</option>
                     <option value="Other">Other</option>
-                    <option value="Salary" data-type="income">Salary</option>
-                    <option value="Investment" data-type="income">Investment</option>
+                    <option value="Salary">Salary</option>
+                    <option value="Investment">Investment</option>
                 </select>
 
                 <label for="amount">Amount</label>
                 <div class="amount-input-wrapper">
                     <span class="currency-prefix">KSh</span>
-                    <input type="number" id="amount" placeholder="500.00" min="0.01" step="0.01" required>
+                    <input type="number" id="amount" placeholder="500.00" min="0.01" step="0.01" required />
                 </div>
 
                 <div class="modal-actions">
                     <button type="button" id="closeModal" class="close-btn">Cancel</button>
-                    <button type="submit" id="saveTransactionBtn" class="save-btn">Save Expense</button>
+                    <button type="submit" id="saveTransactionBtn" class="save-btn">
+                        Save Transaction
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- LOGOUT CONFIRM MODAL -->
     <div id="logoutConfirmModal" class="modal">
         <div class="modal-content">
             <h3>Confirm Logout</h3>
-            <p>Are you sure you want to log out of your financial dashboard?</p>
+            <p>Are you sure you want to log out?</p>
             <div class="modal-actions">
-                <button type="button" id="cancelLogoutBtn" class="close-btn">Cancel</button>
-                <button type="button" id="confirmLogoutBtn" class="save-btn">Logout</button>
+                <button type="button" id="cancelLogoutBtn" class="close-btn">
+                    Cancel
+                </button>
+                <button type="button" id="confirmLogoutBtn" class="save-btn">
+                    Logout
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- TOAST -->
     <div id="toastNotification" class="toast">
         ✅ Transaction saved successfully.
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="script.js"></script>
+    <!-- FIREBASE & GEMINI IMPORTS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 
 </html>

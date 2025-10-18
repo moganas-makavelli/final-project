@@ -592,4 +592,102 @@ header h2 {
         flex-direction: column;
         align-items: flex-start;
     }
+
+    /* ====================================================================
+   AI Coach (Chat) Styling
+   ==================================================================== */
+
+    .ai-chat-box {
+        /* Define the overall chat container size */
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        height: 60vh;
+        /* Set a fixed height for scrolling */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        /* Contains the scrollable output */
+        border: 1px solid var(--border-color);
+    }
+
+    .chat-output {
+        flex-grow: 1;
+        /* Takes up all available space */
+        padding: 15px;
+        overflow-y: auto;
+        /* Enables vertical scrolling */
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chat-input {
+        display: flex;
+        padding: 15px;
+        border-top: 1px solid var(--border-color);
+        background-color: var(--main-bg);
+        /* Slightly darker background for input area */
+    }
+
+    .chat-input input {
+        flex-grow: 1;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px 0 0 8px;
+        /* Rounded on the left */
+        background-color: #3f3f46;
+        /* Lighter dark input field */
+        color: white;
+    }
+
+    .chat-input button {
+        padding: 10px 20px;
+        border: none;
+        background-color: var(--blue-color);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 0 8px 8px 0;
+        /* Rounded on the right */
+        transition: background-color 0.2s;
+    }
+
+    .chat-input button:hover {
+        background-color: #1e40af;
+    }
+
+    /* Individual Message Styles */
+    .chat-message {
+        padding: 10px;
+        border-radius: 8px;
+        max-width: 85%;
+        /* Messages don't span the full width */
+        line-height: 1.4;
+    }
+
+    .chat-message.ai {
+        background-color: var(--blue-color-light);
+        /* Light blue background for AI */
+        align-self: flex-start;
+        color: #1f2937;
+        /* Darker text for contrast on light background */
+    }
+
+    .chat-message.user {
+        background-color: var(--dark-gray);
+        /* Darker background for user */
+        align-self: flex-end;
+        color: white;
+    }
+
+    .chat-message strong {
+        font-weight: 700;
+    }
+
+    .menu li.active {
+        background-color: #2b2f3a;
+        color: #fff;
+        font-weight: 600;
+    }
+
 }

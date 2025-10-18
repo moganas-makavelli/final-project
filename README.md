@@ -1,8 +1,9 @@
-# 💸 Smart Finance Dashboard  
+# 💸 FinDash  
 
 ### _An Intelligent Personal Finance Tracker with AI Coaching & Predictive Insights_  
 
-![App Banner](https://user-images.githubusercontent.com/your-username/your-banner-image.png)  
+![App Banner](<img width="1536" height="1024" alt="banner" src="https://github.com/user-attachments/assets/37f72278-ef09-4bb6-8150-9f4686af7a7f" />
+)  
 > Manage your finances smarter — track expenses, visualize trends, and receive AI-powered insights in one sleek dashboard.  
 
 ---
@@ -71,7 +72,7 @@ Built with **HTML, CSS, and JavaScript**, the app features a fully responsive la
 
 | Dashboard | AI Coach | Reports |
 |------------|-----------|----------|
-| ![Dashboard Screenshot](https://user-images.githubusercontent.com/your-username/dashboard.png) | ![AI Coach Screenshot](https://user-images.githubusercontent.com/your-username/aicoach.png) | ![Reports Screenshot](https://user-images.githubusercontent.com/your-username/reports.png) |
+| ![Dashboard Screenshot](assets/dashboard.png) | ![AI Coach Screenshot](assets/aicoach.png) | ![Reports Screenshot](assets/reports.png) |
 
 ---
 
@@ -91,7 +92,7 @@ Built with **HTML, CSS, and JavaScript**, the app features a fully responsive la
 ### 🖥️ Run Locally  
 1. Clone the repository:  
    ```bash
-   git clone https://github.com/your-username/Smart-Finance-Dashboard.git
+  https://github.com/moganas-makavelli/final-project.git
 2.Open the folder and launch index.html in your browser.
 3.Add your financial data and chat with the AI coach — your insights will update instantly!
 

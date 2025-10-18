@@ -1,26 +1,23 @@
 /* General Setup */
 :root {
     --primary-color: #2563eb;
-    /* Blue */
     --secondary-color: #f59e0b;
-    /* Amber/Yellow */
     --background-dark: #0f172a;
-    /* Slate 900 */
     --surface-dark: #1e293b;
-    /* Slate 800 */
     --text-light: #f8fafc;
-    /* Slate 50 */
     --text-secondary: #94a3b8;
-    /* Slate 400 */
     --green-color: #10b981;
-    /* Emerald 500 (Income/Savings) */
     --red-color: #ef4444;
-    /* Red 500 (Expenses/Loss) */
     --border-color: #334155;
-    /* Slate 700 */
     --shadow-color: rgba(0, 0, 0, 0.4);
+    --card-bg: #111827;
+    --main-bg: #0b1220;
+    --blue-color: #2563eb;
+    --blue-color-light: #bfdbfe;
+    --dark-gray: #374151;
 }
 
+/* Reset */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -35,10 +32,7 @@ body {
     overflow-x: hidden;
 }
 
-/* ------------------------------ */
-/* 1. Dashboard Layout & Navigation */
-/* ------------------------------ */
-
+/* Layout */
 #app-dashboard {
     display: flex;
     height: 100vh;
@@ -50,6 +44,8 @@ body {
     padding: 2rem 1.5rem;
     box-shadow: 2px 0 5px var(--shadow-color);
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .logo {
@@ -62,22 +58,24 @@ body {
 .menu {
     list-style: none;
     padding: 0;
+    margin: 0;
+    display: block;
 }
 
 .menu li {
-    padding: 1rem 0.5rem;
+    padding: 0.9rem 0.75rem;
     cursor: pointer;
     font-size: 1rem;
     color: var(--text-secondary);
-    transition: background-color 0.2s, color 0.2s;
+    transition: background-color 0.18s, color 0.18s, transform 0.12s;
     border-radius: 6px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 
 .menu li:hover {
     background-color: #334155;
-    /* Slate 700 */
     color: var(--text-light);
+    transform: translateX(4px);
 }
 
 .menu li.active {
@@ -91,13 +89,11 @@ body {
     padding: 2rem 3rem;
     overflow-y: auto;
     position: relative;
-    /* Needed for FAB */
 }
 
 .content-section {
     display: none;
     opacity: 0;
-    /* Subtle transition effect */
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
     transform: translateY(10px);
 }
@@ -108,10 +104,7 @@ body {
     transform: translateY(0);
 }
 
-/* ------------------------------ */
-/* 2. Header & Floating Action Button (FAB) */
-/* ------------------------------ */
-
+/* Header & FAB */
 header {
     display: flex;
     justify-content: space-between;
@@ -119,8 +112,6 @@ header {
     margin-bottom: 2rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 1rem;
-    position: relative;
-    /* To keep the header structure */
 }
 
 header h2 {
@@ -128,10 +119,8 @@ header h2 {
     font-size: 1.8rem;
 }
 
-/* FAB Styling */
 .add-transaction {
     position: fixed;
-    /* Fixed position */
     bottom: 2rem;
     right: 2rem;
     width: 50px;
@@ -140,14 +129,12 @@ header h2 {
     color: var(--text-light);
     border: none;
     border-radius: 50%;
-    /* Circle shape */
     cursor: pointer;
     font-size: 2rem;
     font-weight: 600;
-    transition: background-color 0.2s, transform 0.2s;
+    transition: background-color 0.2s, transform 0.15s;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     z-index: 990;
-    /* Above most elements */
     line-height: 50px;
     text-align: center;
     padding: 0;
@@ -155,12 +142,10 @@ header h2 {
 
 .add-transaction:hover {
     background-color: #1d4ed8;
-    /* Blue 700 */
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 
-/* Hide header button on small screens where FAB takes over */
-@media (max-width: 768px) {
+@media (max-width:768px) {
     header .add-transaction {
         position: static;
         width: 100%;
@@ -168,22 +153,15 @@ header h2 {
         border-radius: 8px;
         font-size: 1rem;
         padding: 0.75rem 1.5rem;
-        margin-top: 1rem;
-        box-shadow: none;
     }
 
-    /* Move FAB to a more central, traditional button spot on mobile headers */
     header {
         flex-direction: column;
         align-items: flex-start;
     }
 }
 
-
-/* ------------------------------ */
-/* 3. Cards & Stats */
-/* ------------------------------ */
-
+/* Cards */
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -195,8 +173,15 @@ header h2 {
     background-color: var(--surface-dark);
     padding: 1.5rem;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
+    transform: translateY(0);
+    transition: transform 0.18s ease, box-shadow 0.18s;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.32);
 }
 
 .card h3 {
@@ -205,15 +190,13 @@ header h2 {
     margin-bottom: 0.75rem;
 }
 
-/* Balance Card Styling */
 .balance-card .amount {
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
     color: var(--text-light);
+    margin-bottom: 1rem;
 }
 
-/* Net Savings Styling */
 .net-savings {
     font-size: 1rem;
     color: var(--text-secondary);
@@ -234,7 +217,6 @@ header h2 {
     font-weight: 700;
 }
 
-
 .green {
     color: var(--green-color);
     font-weight: 600;
@@ -245,7 +227,6 @@ header h2 {
     font-weight: 600;
 }
 
-/* Limit/Progress Bar Card */
 .limit-card p:first-of-type {
     font-size: 1.2rem;
     font-weight: 600;
@@ -266,16 +247,11 @@ header h2 {
     transition: width 0.5s ease-in-out, background-color 0.3s ease;
 }
 
-/* Progress Bar Warning Color */
 .progress.warning {
     background-color: var(--red-color);
 }
 
-
-/* ------------------------------ */
-/* 4. Transactions List (Icons) */
-/* ------------------------------ */
-
+/* Transactions list */
 .transactions-section h3 {
     margin-bottom: 1rem;
     font-weight: 600;
@@ -294,28 +270,18 @@ header h2 {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1rem;
-    /* Increased padding for better touch targets */
     border-bottom: 1px solid var(--border-color);
     font-size: 1rem;
     color: var(--text-light);
-    transition: background-color 0.2s;
-}
-
-#transactionList li:last-child,
-#allTransactionList li:last-child {
-    border-bottom: none;
+    transition: background-color 0.18s;
 }
 
 #transactionList li:hover,
 #allTransactionList li:hover {
     background-color: #172554;
-    /* Blue 900 slightly darker */
 }
 
-/* ------------------------------ */
-/* 5. Modals & Forms (Input Styling) */
-/* ------------------------------ */
-
+/* Modals & inputs */
 .modal {
     display: none;
     position: fixed;
@@ -325,7 +291,7 @@ header h2 {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.8);
     justify-content: center;
     align-items: center;
 }
@@ -339,12 +305,12 @@ header h2 {
     padding: 2rem;
     border-radius: 12px;
     width: 90%;
-    max-width: 400px;
-    box-shadow: 0 5px 15px var(--shadow-color);
+    max-width: 420px;
+    box-shadow: 0 8px 28px var(--shadow-color);
     border: 1px solid var(--border-color);
 }
 
-/* Standard Input Styling */
+/* Inputs */
 .modal-content input[type="text"],
 .modal-content input[type="number"],
 .modal-content input[type="email"],
@@ -360,23 +326,18 @@ header h2 {
     background-color: var(--background-dark);
     color: var(--text-light);
     font-size: 1rem;
-    /* Focus Ring Styling */
-    outline: none;
-    transition: box-shadow 0.2s, border-color 0.2s;
 }
 
-/* Focus Ring Style */
 .modal-content input:focus,
 .modal-content select:focus,
 .settings-form input:focus,
 .save-btn:focus,
 .close-btn:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
-    /* Primary color glow */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-/* KSh Prefix Wrapper Styling */
+/* amount prefix */
 .amount-input-wrapper {
     position: relative;
     display: flex;
@@ -394,9 +355,9 @@ header h2 {
 
 .amount-input-wrapper input {
     padding-left: 55px;
-    /* Shift input content past the 'KSh ' prefix */
 }
 
+/* buttons */
 .modal-actions {
     display: flex;
     justify-content: flex-end;
@@ -421,7 +382,7 @@ header h2 {
 }
 
 .save-btn:hover {
-    opacity: 0.9;
+    opacity: 0.92;
 }
 
 .close-btn {
@@ -429,19 +390,10 @@ header h2 {
     color: var(--background-dark);
 }
 
-.close-btn:hover {
-    opacity: 0.9;
-}
-
-/* Logout Confirmation Modal Style */
+/* Logout confirm */
 #logoutConfirmModal .modal-content {
     max-width: 350px;
     text-align: center;
-}
-
-#logoutConfirmModal p {
-    margin-bottom: 1.5rem;
-    color: var(--text-light);
 }
 
 #confirmLogoutBtn {
@@ -452,10 +404,7 @@ header h2 {
     background-color: #c72b2b;
 }
 
-/* ------------------------------ */
-/* 6. Settings & Reports Section Styling (NEW) */
-/* ------------------------------ */
-
+/* Reports & settings */
 .section-description {
     color: var(--text-secondary);
     margin-bottom: 2rem;
@@ -469,7 +418,7 @@ header h2 {
     border-radius: 8px;
     border: 1px solid var(--border-color);
     margin-bottom: 1.5rem;
-    max-width: 600px;
+    max-width: 720px;
 }
 
 .settings-form h4,
@@ -485,29 +434,108 @@ header h2 {
     color: var(--text-secondary);
 }
 
-.settings-form .modal-actions {
-    justify-content: flex-start;
-    margin-top: 1.5rem;
+/* report summary */
+.report-summary {
+    margin-bottom: 12px;
+    color: var(--text-light);
 }
 
-.report-option p {
+.fade-in {
+    animation: fadeInUp 0.45s ease both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Forecast card styling (new) */
+.forecast-card {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.7), rgba(17, 24, 39, 0.85));
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 1000px;
+}
+
+.forecast-top {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.forecast-stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.forecast-stats .stat {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px;
+    border-radius: 8px;
+    min-width: 160px;
+    text-align: left;
+}
+
+.forecast-stats .stat-label {
     color: var(--text-secondary);
-    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
 }
 
-.small {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+.forecast-stats .stat-value {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--text-light);
 }
 
-/* ------------------------------ */
-/* 7. Toast Notification */
-/* ------------------------------ */
+.forecast-charts {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#miniDonut,
+#miniSparkline {
+    background: transparent;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+/* narrative */
+.forecast-narrative {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.forecast-narrative h4 {
+    margin-bottom: 8px;
+}
+
+.narrative-text {
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
+/* Toast */
 .toast {
     position: fixed;
     bottom: 20px;
     right: -350px;
-    /* Hidden off-screen initially */
     background-color: var(--green-color);
     color: var(--background-dark);
     padding: 15px 20px;
@@ -522,12 +550,8 @@ header h2 {
     right: 20px;
 }
 
-
-/* ------------------------------ */
-/* 8. Responsive Design */
-/* ------------------------------ */
-
-@media (max-width: 1024px) {
+/* Responsive */
+@media (max-width:1024px) {
     .sidebar {
         width: 200px;
     }
@@ -537,7 +561,7 @@ header h2 {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width:768px) {
     #app-dashboard {
         flex-direction: column;
     }
@@ -576,46 +600,20 @@ header h2 {
         grid-template-columns: 1fr;
     }
 
-    /* Move FAB to top on small screens to be an 'Add' button in the header */
-    .add-transaction {
-        position: static;
-        width: 100%;
-        height: auto;
-        border-radius: 8px;
-        font-size: 1rem;
-        padding: 0.75rem 1.5rem;
-        margin-top: 1rem;
-        box-shadow: none;
-    }
-
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    /* ====================================================================
-   AI Coach (Chat) Styling
-   ==================================================================== */
-
     .ai-chat-box {
-        /* Define the overall chat container size */
         background-color: var(--card-bg);
         border-radius: 12px;
         height: 60vh;
-        /* Set a fixed height for scrolling */
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        /* Contains the scrollable output */
         border: 1px solid var(--border-color);
     }
 
     .chat-output {
         flex-grow: 1;
-        /* Takes up all available space */
         padding: 15px;
         overflow-y: auto;
-        /* Enables vertical scrolling */
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -626,7 +624,6 @@ header h2 {
         padding: 15px;
         border-top: 1px solid var(--border-color);
         background-color: var(--main-bg);
-        /* Slightly darker background for input area */
     }
 
     .chat-input input {
@@ -634,9 +631,7 @@ header h2 {
         padding: 10px 15px;
         border: none;
         border-radius: 8px 0 0 8px;
-        /* Rounded on the left */
         background-color: #3f3f46;
-        /* Lighter dark input field */
         color: white;
     }
 
@@ -648,7 +643,6 @@ header h2 {
         font-weight: bold;
         cursor: pointer;
         border-radius: 0 8px 8px 0;
-        /* Rounded on the right */
         transition: background-color 0.2s;
     }
 
@@ -656,38 +650,28 @@ header h2 {
         background-color: #1e40af;
     }
 
-    /* Individual Message Styles */
     .chat-message {
         padding: 10px;
         border-radius: 8px;
         max-width: 85%;
-        /* Messages don't span the full width */
         line-height: 1.4;
     }
 
     .chat-message.ai {
         background-color: var(--blue-color-light);
-        /* Light blue background for AI */
         align-self: flex-start;
         color: #1f2937;
-        /* Darker text for contrast on light background */
     }
 
     .chat-message.user {
         background-color: var(--dark-gray);
-        /* Darker background for user */
         align-self: flex-end;
         color: white;
     }
+}
 
-    .chat-message strong {
-        font-weight: 700;
-    }
-
-    .menu li.active {
-        background-color: #2b2f3a;
-        color: #fff;
-        font-weight: 600;
-    }
-
+/* small helpers */
+.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
 }

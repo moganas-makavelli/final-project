@@ -2,8 +2,7 @@
 
 ### _An Intelligent Personal Finance Tracker with AI Coaching & Predictive Insights_  
 
-![App Banner](<img width="1536" height="1024" alt="banner" src="https://github.com/user-attachments/assets/37f72278-ef09-4bb6-8150-9f4686af7a7f" />
-)  
+![App Banner](public/assets/banner.png)  
 > Manage your finances smarter — track expenses, visualize trends, and receive AI-powered insights in one sleek dashboard.  
 
 ---
@@ -72,7 +71,7 @@ Built with **HTML, CSS, and JavaScript**, the app features a fully responsive la
 
 | Dashboard | AI Coach | Reports |
 |------------|-----------|----------|
-| ![Dashboard Screenshot](assets/dashboard.png) | ![AI Coach Screenshot](assets/aicoach.png) | ![Reports Screenshot](assets/reports.png) |
+| ![Dashboard Screenshot](public/assets/aicoach.png) | ![AI Coach Screenshot](public/assets/aicoach.png) | ![Reports Screenshot](public/assets/reports.png) |
 
 ---
 

@@ -37,7 +37,7 @@ const SAVE_CHAT_TO_DB = true;
 // ---------------------------
 // Gemini (client-side; dev only — keep key server-side in production)
 // ---------------------------
-const GEMINI_API_KEY = "AIzaSyDR1rQbIpwyGxSPKvPUhYELHokQiEVRSk4";
+const GEMINI_API_KEY = "AIzaSyDyf1nY0lm_ILOOzqlwkaQvcVHUsglX4K4";
 let gemini = null;
 let geminiModel = "gemini-2.0-flash";
 try { gemini = new GoogleGenerativeAI(GEMINI_API_KEY); console.log("Gemini initialized"); }

@@ -4,7 +4,6 @@
 // Keep <script type="module" src="script.js"></script> in your HTML
 // ====================================================================
 
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
 // ---------------------------
 // FIREBASE & APP SETUP
@@ -34,18 +33,7 @@ let dailyLimit = 10000;
 let conversationHistory = [];
 const SAVE_CHAT_TO_DB = true;
 
-// ---------------------------
-// Gemini (client-side; dev only — keep key server-side in production)
-// ---------------------------
 
-let gemini = null;
-
-try {
-    gemini = new GoogleGenerativeAI(GEMINI_API_KEY);
-    console.log("Gemini initialized");
-} catch (e) {
-    console.error("Gemini init failed:", e);
-}
 
 // ---------------------------
 // DOM helpers & selections
@@ -493,7 +481,6 @@ const getAIFinancialAdvice = async (question) => {
 };
 
 const getPredictiveInsights = async () => {
-    if (!gemini) return "Prediction engine unavailable.";
     // compute data client-side and also request narrative
     const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const txs = await getTransactionsForUser(currentUserId, { startDate: sixMonthsAgo, limit: 2000 });

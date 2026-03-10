@@ -467,8 +467,14 @@ const getAIFinancialAdvice = async (question) => {
             })
         });
 
-        const data = await response.json();
+        let data;
 
+        try {
+            data = await response.json();
+        } catch (error) {
+            console.error("Invalid JSON response:", error);
+            return "AI service unavailable.";
+        }
 
         console.log("Gemini response:", data);
 

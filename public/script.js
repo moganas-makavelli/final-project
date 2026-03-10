@@ -37,7 +37,6 @@ const SAVE_CHAT_TO_DB = true;
 // ---------------------------
 // Gemini (client-side; dev only — keep key server-side in production)
 // ---------------------------
-const GEMINI_API_KEY = "";
 
 let gemini = null;
 

@@ -37,11 +37,16 @@ const SAVE_CHAT_TO_DB = true;
 // ---------------------------
 // Gemini (client-side; dev only — keep key server-side in production)
 // ---------------------------
-const GEMINI_API_KEY = "AIzaSyDR1rQbIpwyGxSPKvPUhYELHokQiEVRSk4";
+const GEMINI_API_KEY = "";
+
 let gemini = null;
-let geminiModel = "gemini-2.0-flash";
-try { gemini = new GoogleGenerativeAI(GEMINI_API_KEY); console.log("Gemini initialized"); }
-catch (e) { console.error("Gemini init failed:", e); }
+
+try {
+    gemini = new GoogleGenerativeAI(GEMINI_API_KEY);
+    console.log("Gemini initialized");
+} catch (e) {
+    console.error("Gemini init failed:", e);
+}
 
 // ---------------------------
 // DOM helpers & selections
@@ -461,30 +466,31 @@ const saveChatToDb = async (userId, role, text) => {
     catch (e) { console.error("saveChatToDb:", e); }
 };
 
-const getAIFinancialAdvice = async userQuestion => {
-    if (!gemini) return "AI unavailable.";
-    conversationHistory.push({ role: "user", text: userQuestion });
-    if (currentUserId && SAVE_CHAT_TO_DB) await saveChatToDb(currentUserId, "user", userQuestion);
-    const recentTxs = await getTransactionsForUser(currentUserId, { startDate: daysAgo(90), limit: 1000 });
-    const summary = summarizeTransactions(recentTxs);
-    const financialContext = `Balance: ${formatCurrency(summary.balance)}; Total Income(90d): ${formatCurrency(summary.totalIncome)}; Total Expense(90d): ${formatCurrency(summary.totalExpense)}; Top: ${summary.topCategories.map(t => t.category + ":" + Math.round(t.amount)).join(", ")}`;
-    const mem = conversationHistory.slice(-8).map(m => `${m.role}: ${m.text}`).join("\n");
-    const systemPrompt = `You are FinCoach. Use the context to answer concisely (<=4 sentences).\nContext: ${financialContext}\nHistory: ${mem}\nQuestion: ${userQuestion}`;
+const getAIFinancialAdvice = async (question) => {
+
     try {
-        const modelInstance = gemini.getGenerativeModel({ model: geminiModel });
-        const result = await modelInstance.generateContent(systemPrompt);
-        let text = "";
-        try {
-            if (result?.response && typeof result.response.text === "function") text = await result.response.text();
-            else if (result?.response && result.response.text) text = result.response.text;
-            else if (result?.output_text) text = result.output_text;
-            else if (result?.text) text = result.text;
-            else text = JSON.stringify(result).slice(0, 800);
-        } catch (e) { text = JSON.stringify(result).slice(0, 800); }
-        conversationHistory.push({ role: "assistant", text });
-        if (currentUserId && SAVE_CHAT_TO_DB) await saveChatToDb(currentUserId, "assistant", text);
-        return text;
-    } catch (err) { console.error("Gemini error:", err); return "Sorry, AI error."; }
+
+        const response = await fetch("/api/gemini", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                prompt: question
+            })
+        });
+
+        const data = await response.json();
+
+        return data.candidates[0].content.parts[0].text;
+
+    } catch (error) {
+
+        console.error(error);
+        return "AI error.";
+
+    }
+
 };
 
 const getPredictiveInsights = async () => {

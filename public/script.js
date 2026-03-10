@@ -469,101 +469,105 @@ const getAIFinancialAdvice = async (question) => {
 
         const data = await response.json();
 
-        return data.candidates[0].content.parts[0].text;
 
-    } catch (error) {
+        console.log("Gemini response:", data);
 
-        console.error(error);
-        return "AI error.";
+        let aiText = "AI advice unavailable.";
 
-    }
+        if (data?.candidates && data.candidates.length > 0) {
+            aiText = data.candidates[0]?.content?.parts?.[0]?.text || aiText;
+        }
 
-};
+        return aiText;
 
-const getPredictiveInsights = async () => {
-    // compute data client-side and also request narrative
-    const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const txs = await getTransactionsForUser(currentUserId, { startDate: sixMonthsAgo, limit: 2000 });
-    const summary = summarizeTransactions(txs);
 
-    // simple quantitative prediction: average of last 3 months expenses
-    const monthly = {}; // key YYYY-MM
-    txs.forEach(t => {
-        const d = t.date instanceof Date ? t.date : (t.date && t.date.toDate ? t.date.toDate() : new Date(t.date));
-        if (!d) return;
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        monthly[key] = monthly[key] || { income: 0, expense: 0 };
-        monthly[key][t.type === 'income' ? 'income' : 'expense'] += Number(t.amount) || 0;
-    });
-    const monthsSorted = Object.keys(monthly).sort();
-    // last 3 months average expense
-    const last3 = monthsSorted.slice(-3);
-    const avgLast3 = last3.reduce((s, k) => s + (monthly[k].expense || 0), 0) / Math.max(1, last3.length);
-    const predictedNext = Math.round(avgLast3);
 
-    // create month labels for sparkline (last 6 months + next)
-    const now = new Date();
-    const labels = [];
-    for (let i = 5; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); labels.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); }
-    const series = labels.map(l => monthly[l] ? monthly[l].expense : 0);
-    const predictedSeries = series.slice(); predictedSeries.push(predictedNext);
 
-    // build prompt for narrative (short)
-    const prompt = `You are FinCoach. Given the user's last 6 months expense totals: ${JSON.stringify(series)} and predicted next month expense: ${predictedNext}, produce:
+
+        const getPredictiveInsights = async () => {
+            // compute data client-side and also request narrative
+            const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            const txs = await getTransactionsForUser(currentUserId, { startDate: sixMonthsAgo, limit: 2000 });
+            const summary = summarizeTransactions(txs);
+
+            // simple quantitative prediction: average of last 3 months expenses
+            const monthly = {}; // key YYYY-MM
+            txs.forEach(t => {
+                const d = t.date instanceof Date ? t.date : (t.date && t.date.toDate ? t.date.toDate() : new Date(t.date));
+                if (!d) return;
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                monthly[key] = monthly[key] || { income: 0, expense: 0 };
+                monthly[key][t.type === 'income' ? 'income' : 'expense'] += Number(t.amount) || 0;
+            });
+            const monthsSorted = Object.keys(monthly).sort();
+            // last 3 months average expense
+            const last3 = monthsSorted.slice(-3);
+            const avgLast3 = last3.reduce((s, k) => s + (monthly[k].expense || 0), 0) / Math.max(1, last3.length);
+            const predictedNext = Math.round(avgLast3);
+
+            // create month labels for sparkline (last 6 months + next)
+            const now = new Date();
+            const labels = [];
+            for (let i = 5; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); labels.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`); }
+            const series = labels.map(l => monthly[l] ? monthly[l].expense : 0);
+            const predictedSeries = series.slice(); predictedSeries.push(predictedNext);
+
+            // build prompt for narrative (short)
+            const prompt = `You are FinCoach. Given the user's last 6 months expense totals: ${JSON.stringify(series)} and predicted next month expense: ${predictedNext}, produce:
 1) One-sentence concise forecast of next month's expenses (confidence),
 2) One bullet risk,
 3) Two actionable tips.
 Return in plain text (short).`;
-    let narrative = "";
-    try {
-        const modelInstance = gemini.getGenerativeModel({ model: geminiModel });
-        const result = await modelInstance.generateContent(prompt);
-        if (result?.response && typeof result.response.text === "function") narrative = await result.response.text();
-        else if (result?.response && result.response.text) narrative = result.response.text;
-        else narrative = result?.output_text || result?.text || "No narrative available.";
-    } catch (err) {
-        console.error("AI forecast narrative error:", err);
-        narrative = "AI narrative unavailable — showing computed forecast instead.";
-    }
+            let narrative = "";
+            try {
+                const modelInstance = gemini.getGenerativeModel({ model: geminiModel });
+                const result = await modelInstance.generateContent(prompt);
+                if (result?.response && typeof result.response.text === "function") narrative = await result.response.text();
+                else if (result?.response && result.response.text) narrative = result.response.text;
+                else narrative = result?.output_text || result?.text || "No narrative available.";
+            } catch (err) {
+                console.error("AI forecast narrative error:", err);
+                narrative = "AI narrative unavailable — showing computed forecast instead.";
+            }
 
-    return { summary, labels, series, predictedNext, predictedSeries, narrative };
-};
+            return { summary, labels, series, predictedNext, predictedSeries, narrative };
+        };
 
-// AI chat wiring
-if (aiChatForm) aiChatForm.addEventListener("submit", async e => {
-    e.preventDefault();
-    if (!currentUserId) { showToast("Please log in to use the AI coach.", false); return; }
-    const q = (aiQuestionInput && aiQuestionInput.value) ? aiQuestionInput.value.trim() : "";
-    if (!q) return;
-    appendMessage('user', q);
-    if (aiQuestionInput) aiQuestionInput.value = "";
-    appendMessage('ai', "Thinking...");
-    const aiReply = await getAIFinancialAdvice(q);
-    if (aiChatOutput && aiChatOutput.lastChild) {
-        const last = aiChatOutput.lastChild;
-        if (last && last.textContent && last.textContent.includes("Thinking")) aiChatOutput.removeChild(last);
-    }
-    appendMessage('ai', aiReply);
-});
-function appendMessage(sender, message) {
-    if (!aiChatOutput) { console.log(`${sender}: ${message}`); return; }
-    const el = document.createElement("div");
-    el.classList.add("chat-message", sender === "user" ? "user" : "ai");
-    el.innerHTML = `<strong>${sender === "user" ? "You" : "Coach"}:</strong> ${message}`;
-    aiChatOutput.appendChild(el);
-    aiChatOutput.scrollTop = aiChatOutput.scrollHeight;
-}
+        // AI chat wiring
+        if (aiChatForm) aiChatForm.addEventListener("submit", async e => {
+            e.preventDefault();
+            if (!currentUserId) { showToast("Please log in to use the AI coach.", false); return; }
+            const q = (aiQuestionInput && aiQuestionInput.value) ? aiQuestionInput.value.trim() : "";
+            if (!q) return;
+            appendMessage('user', q);
+            if (aiQuestionInput) aiQuestionInput.value = "";
+            appendMessage('ai', "Thinking...");
+            const aiReply = await getAIFinancialAdvice(q);
+            if (aiChatOutput && aiChatOutput.lastChild) {
+                const last = aiChatOutput.lastChild;
+                if (last && last.textContent && last.textContent.includes("Thinking")) aiChatOutput.removeChild(last);
+            }
+            appendMessage('ai', aiReply);
+        });
+        function appendMessage(sender, message) {
+            if (!aiChatOutput) { console.log(`${sender}: ${message}`); return; }
+            const el = document.createElement("div");
+            el.classList.add("chat-message", sender === "user" ? "user" : "ai");
+            el.innerHTML = `<strong>${sender === "user" ? "You" : "Coach"}:</strong> ${message}`;
+            aiChatOutput.appendChild(el);
+            aiChatOutput.scrollTop = aiChatOutput.scrollHeight;
+        }
 
-// ---------------------------
-// Forecast UI rendering (mini donut + sparkline + narrative card)
-// ---------------------------
-let miniDonutChart = null;
-let miniSparklineChart = null;
+        // ---------------------------
+        // Forecast UI rendering (mini donut + sparkline + narrative card)
+        // ---------------------------
+        let miniDonutChart = null;
+        let miniSparklineChart = null;
 
-function renderForecastCard({ summary, labels, series, predictedNext, predictedSeries, narrative }) {
-    if (!reportOutput) return;
-    // create card HTML
-    reportOutput.innerHTML = `
+        function renderForecastCard({ summary, labels, series, predictedNext, predictedSeries, narrative }) {
+            if (!reportOutput) return;
+            // create card HTML
+            reportOutput.innerHTML = `
       <div id="forecastCard" class="forecast-card fade-in">
         <div class="forecast-top">
           <div class="forecast-stats">
@@ -592,140 +596,140 @@ function renderForecastCard({ summary, labels, series, predictedNext, predictedS
       </div>
     `;
 
-    // create donut: top categories from summary.byCategory
-    const donutCtx = document.getElementById("miniDonut").getContext("2d");
-    const byCat = summary.byCategory || {};
-    const donutLabels = Object.keys(byCat);
-    const donutData = donutLabels.map(l => byCat[l] || 0);
-    if (miniDonutChart) { try { miniDonutChart.destroy(); } catch (e) { } miniDonutChart = null; }
-    miniDonutChart = new Chart(donutCtx, {
-        type: "doughnut",
-        data: { labels: donutLabels, datasets: [{ data: donutData, backgroundColor: donutLabels.map((_, i) => getColor(i)) }] },
-        options: { plugins: { legend: { position: 'bottom' } }, responsive: true, maintainAspectRatio: false }
-    });
-
-    // create sparkline: series + predictedNext appended
-    const sparkCtx = document.getElementById("miniSparkline").getContext("2d");
-    const sparkLabels = labels.concat(["Next"]);
-    const sparkData = series.concat([predictedNext]);
-    if (miniSparklineChart) { try { miniSparklineChart.destroy(); } catch (e) { } miniSparklineChart = null; }
-    miniSparklineChart = new Chart(sparkCtx, {
-        type: "line",
-        data: { labels: sparkLabels, datasets: [{ label: "Expenses", data: sparkData, borderColor: "rgba(239,68,68,0.95)", fill: true, backgroundColor: createGradient(sparkCtx) }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { display: false } }, elements: { point: { radius: 3 } } }
-    });
-
-    // helper to create gradient for sparkline
-    function createGradient(ctx) {
-        const g = ctx.createLinearGradient(0, 0, 0, 120);
-        g.addColorStop(0, 'rgba(239,68,68,0.18)');
-        g.addColorStop(1, 'rgba(239,68,68,0.02)');
-        return g;
-    }
-    function getColor(idx) {
-        const palette = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#10b981", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6"];
-        return palette[idx % palette.length];
-    }
-}
-
-// ---------------------------
-// Attach AI Forecast button (improved visual flow)
-// ---------------------------
-const attachPredictButtonIfMissing = () => {
-    if (!document.getElementById("predictiveBtn")) {
-        const reportsSection = document.getElementById("reports-section");
-        if (reportsSection) {
-            const btn = document.createElement("button");
-            btn.id = "predictiveBtn";
-            btn.className = "save-btn small";
-            btn.textContent = "AI Forecast";
-            btn.style.marginLeft = "10px";
-            reportsSection.querySelector(".report-option") && reportsSection.appendChild(btn);
-            btn.addEventListener("click", async () => {
-                if (!currentUserId) { showToast("Login to get forecast", false); return; }
-                showToast("Generating AI forecast — please wait...", true);
-                // compute predictive insights and render a rich card
-                const result = await getPredictiveInsights();
-                // compute summary for donut chart too
-                const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-                const txs = await getTransactionsForUser(currentUserId, { startDate: sixMonthsAgo, limit: 2000 });
-                const summary = summarizeTransactions(txs);
-                // build labels and series for last 6 months
-                const monthly = {};
-                txs.forEach(t => {
-                    const d = t.date instanceof Date ? t.date : (t.date && t.date.toDate ? t.date.toDate() : new Date(t.date));
-                    if (!d) return;
-                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                    monthly[key] = monthly[key] || 0;
-                    if (t.type === 'expense') monthly[key] += Number(t.amount) || 0;
-                });
-                const now = new Date();
-                const labels = [];
-                const series = [];
-                for (let i = 5; i >= 0; i--) {
-                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                    labels.push(key);
-                    series.push(monthly[key] || 0);
-                }
-                // predicted next month using getPredictiveInsights returned predictedNext if available
-                const predictedNext = (typeof result.predictedNext === "number") ? result.predictedNext : Math.round(series.slice(-3).reduce((s, v) => s + v, 0) / Math.max(1, Math.min(3, series.length)));
-                renderForecastCard({ summary, labels, series, predictedNext, predictedSeries: series.concat([predictedNext]), narrative: result.narrative || result });
+            // create donut: top categories from summary.byCategory
+            const donutCtx = document.getElementById("miniDonut").getContext("2d");
+            const byCat = summary.byCategory || {};
+            const donutLabels = Object.keys(byCat);
+            const donutData = donutLabels.map(l => byCat[l] || 0);
+            if (miniDonutChart) { try { miniDonutChart.destroy(); } catch (e) { } miniDonutChart = null; }
+            miniDonutChart = new Chart(donutCtx, {
+                type: "doughnut",
+                data: { labels: donutLabels, datasets: [{ data: donutData, backgroundColor: donutLabels.map((_, i) => getColor(i)) }] },
+                options: { plugins: { legend: { position: 'bottom' } }, responsive: true, maintainAspectRatio: false }
             });
+
+            // create sparkline: series + predictedNext appended
+            const sparkCtx = document.getElementById("miniSparkline").getContext("2d");
+            const sparkLabels = labels.concat(["Next"]);
+            const sparkData = series.concat([predictedNext]);
+            if (miniSparklineChart) { try { miniSparklineChart.destroy(); } catch (e) { } miniSparklineChart = null; }
+            miniSparklineChart = new Chart(sparkCtx, {
+                type: "line",
+                data: { labels: sparkLabels, datasets: [{ label: "Expenses", data: sparkData, borderColor: "rgba(239,68,68,0.95)", fill: true, backgroundColor: createGradient(sparkCtx) }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { display: false } }, elements: { point: { radius: 3 } } }
+            });
+
+            // helper to create gradient for sparkline
+            function createGradient(ctx) {
+                const g = ctx.createLinearGradient(0, 0, 0, 120);
+                g.addColorStop(0, 'rgba(239,68,68,0.18)');
+                g.addColorStop(1, 'rgba(239,68,68,0.02)');
+                return g;
+            }
+            function getColor(idx) {
+                const palette = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#10b981", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6"];
+                return palette[idx % palette.length];
+            }
         }
-    }
-};
-attachPredictButtonIfMissing();
 
-// ---------------------------
-// Export CSV utility (optional)
-// ---------------------------
-const exportTransactionsToCSV = async (filters = {}) => {
-    if (!currentUserId) { showToast("Log in to export data", false); return; }
-    const txs = await getTransactionsForUser(currentUserId, filters);
-    if (!txs.length) { showToast("No transactions to export.", false); return; }
-    const rows = txs.map(t => {
-        const dateStr = t.date instanceof Date ? t.date.toISOString() : (t.date && t.date.toDate ? t.date.toDate().toISOString() : "");
-        return `"${dateStr}","${t.type}","${t.category}","${t.amount}","${(t.description || "").replace(/"/g, '""')}"`;
-    });
-    const csv = `Date,Type,Category,Amount,Note\n${rows.join("\n")}`;
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `transactions_${currentUserId}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-};
-const exportBtn = document.getElementById("exportCsvBtn");
-if (exportBtn) exportBtn.addEventListener("click", () => exportTransactionsToCSV({ startDate: daysAgo(365), limit: 10000 }));
+        // ---------------------------
+        // Attach AI Forecast button (improved visual flow)
+        // ---------------------------
+        const attachPredictButtonIfMissing = () => {
+            if (!document.getElementById("predictiveBtn")) {
+                const reportsSection = document.getElementById("reports-section");
+                if (reportsSection) {
+                    const btn = document.createElement("button");
+                    btn.id = "predictiveBtn";
+                    btn.className = "save-btn small";
+                    btn.textContent = "AI Forecast";
+                    btn.style.marginLeft = "10px";
+                    reportsSection.querySelector(".report-option") && reportsSection.appendChild(btn);
+                    btn.addEventListener("click", async () => {
+                        if (!currentUserId) { showToast("Login to get forecast", false); return; }
+                        showToast("Generating AI forecast — please wait...", true);
+                        // compute predictive insights and render a rich card
+                        const result = await getPredictiveInsights();
+                        // compute summary for donut chart too
+                        const sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                        const txs = await getTransactionsForUser(currentUserId, { startDate: sixMonthsAgo, limit: 2000 });
+                        const summary = summarizeTransactions(txs);
+                        // build labels and series for last 6 months
+                        const monthly = {};
+                        txs.forEach(t => {
+                            const d = t.date instanceof Date ? t.date : (t.date && t.date.toDate ? t.date.toDate() : new Date(t.date));
+                            if (!d) return;
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            monthly[key] = monthly[key] || 0;
+                            if (t.type === 'expense') monthly[key] += Number(t.amount) || 0;
+                        });
+                        const now = new Date();
+                        const labels = [];
+                        const series = [];
+                        for (let i = 5; i >= 0; i--) {
+                            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            labels.push(key);
+                            series.push(monthly[key] || 0);
+                        }
+                        // predicted next month using getPredictiveInsights returned predictedNext if available
+                        const predictedNext = (typeof result.predictedNext === "number") ? result.predictedNext : Math.round(series.slice(-3).reduce((s, v) => s + v, 0) / Math.max(1, Math.min(3, series.length)));
+                        renderForecastCard({ summary, labels, series, predictedNext, predictedSeries: series.concat([predictedNext]), narrative: result.narrative || result });
+                    });
+                }
+            }
+        };
+        attachPredictButtonIfMissing();
 
-// ---------------------------
-// Navigation restore patch (ensure menu toggles views)
-// ---------------------------
-document.addEventListener("DOMContentLoaded", () => {
-    const menuItems = document.querySelectorAll(".menu li[data-section]");
-    const sections = document.querySelectorAll(".content-section");
-    if (!menuItems.length || !sections.length) return;
-    menuItems.forEach(item => {
-        item.addEventListener("click", () => {
-            menuItems.forEach(i => i.classList.remove("active"));
-            item.classList.add("active");
-            const targetSection = item.dataset.section;
-            sections.forEach(sec => sec.style.display = "none");
-            document.querySelectorAll(".content-section").forEach(sec => sec.classList.remove("active-section"));
-            const sectionEl = document.getElementById(targetSection);
-            if (sectionEl) { sectionEl.style.display = "block"; sectionEl.classList.add("active-section"); }
-            else console.error(`Section ${targetSection} not found`);
+        // ---------------------------
+        // Export CSV utility (optional)
+        // ---------------------------
+        const exportTransactionsToCSV = async (filters = {}) => {
+            if (!currentUserId) { showToast("Log in to export data", false); return; }
+            const txs = await getTransactionsForUser(currentUserId, filters);
+            if (!txs.length) { showToast("No transactions to export.", false); return; }
+            const rows = txs.map(t => {
+                const dateStr = t.date instanceof Date ? t.date.toISOString() : (t.date && t.date.toDate ? t.date.toDate().toISOString() : "");
+                return `"${dateStr}","${t.type}","${t.category}","${t.amount}","${(t.description || "").replace(/"/g, '""')}"`;
+            });
+            const csv = `Date,Type,Category,Amount,Note\n${rows.join("\n")}`;
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `transactions_${currentUserId}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+        const exportBtn = document.getElementById("exportCsvBtn");
+        if (exportBtn) exportBtn.addEventListener("click", () => exportTransactionsToCSV({ startDate: daysAgo(365), limit: 10000 }));
+
+        // ---------------------------
+        // Navigation restore patch (ensure menu toggles views)
+        // ---------------------------
+        document.addEventListener("DOMContentLoaded", () => {
+            const menuItems = document.querySelectorAll(".menu li[data-section]");
+            const sections = document.querySelectorAll(".content-section");
+            if (!menuItems.length || !sections.length) return;
+            menuItems.forEach(item => {
+                item.addEventListener("click", () => {
+                    menuItems.forEach(i => i.classList.remove("active"));
+                    item.classList.add("active");
+                    const targetSection = item.dataset.section;
+                    sections.forEach(sec => sec.style.display = "none");
+                    document.querySelectorAll(".content-section").forEach(sec => sec.classList.remove("active-section"));
+                    const sectionEl = document.getElementById(targetSection);
+                    if (sectionEl) { sectionEl.style.display = "block"; sectionEl.classList.add("active-section"); }
+                    else console.error(`Section ${targetSection} not found`);
+                });
+            });
+            const defaultSection = document.getElementById("dashboard-section");
+            if (defaultSection) { defaultSection.style.display = "block"; defaultSection.classList.add("active-section"); }
         });
-    });
-    const defaultSection = document.getElementById("dashboard-section");
-    if (defaultSection) { defaultSection.style.display = "block"; defaultSection.classList.add("active-section"); }
-});
 
-// ---------------------------
-// Init
-// ---------------------------
-initExpensesChart();
-updateUI();
+        // ---------------------------
+        // Init
+        // ---------------------------
+        initExpensesChart();
+        updateUI();
 // ====================================================================

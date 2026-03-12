@@ -1,5 +1,15 @@
 {
-    "name": "findash-project",
-    "version": "1.0.0",
-    "private": true
+    "routes": [
+        {
+            "src": "^/api/(.*)",
+            "dest": "/api/$1"
+        },
+        {
+            "handle": "filesystem"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/public/$1"
+        }
+    ]
 }

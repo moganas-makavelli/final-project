@@ -476,7 +476,7 @@ const getAIFinancialAdvice = async (question) => {
             return "AI service unavailable.";
         }
 
-        console.log("Gemini response:", data);
+        console.log("Gemini response:", data.candidates[0].content.parts[0].text);
 
         let aiText = "AI advice unavailable.";
 

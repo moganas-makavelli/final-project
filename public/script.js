@@ -476,12 +476,21 @@ const getAIFinancialAdvice = async (question) => {
             return "AI service unavailable.";
         }
 
-        console.log("Gemini response:", data.candidates[0].content.parts[0].text);
+        console.log("Gemini response:", data);
 
         let aiText = "AI advice unavailable.";
 
-        if (data?.candidates && data.candidates.length > 0) {
-            aiText = data.candidates[0]?.content?.parts?.[0]?.text || aiText;
+        if (
+            data &&
+            data.candidates &&
+            data.candidates.length > 0 &&
+            data.candidates[0].content &&
+            data.candidates[0].content.parts &&
+            data.candidates[0].content.parts.length > 0
+        ) {
+            aiText = data.candidates[0].content.parts[0].text;
+        } else {
+            console.error("Unexpected Gemini response:", data);
         }
 
         return aiText;

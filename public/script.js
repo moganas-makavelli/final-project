@@ -480,17 +480,31 @@ const getAIFinancialAdvice = async (question) => {
 
         let aiText = "AI advice unavailable.";
 
-        if (
-            data &&
-            data.candidates &&
-            data.candidates.length > 0 &&
-            data.candidates[0].content &&
-            data.candidates[0].content.parts &&
-            data.candidates[0].content.parts.length > 0
-        ) {
-            aiText = data.candidates[0].content.parts[0].text;
-        } else {
+        if (data.candidates && data.candidates.length > 0) {
+
+            const candidate = data.candidates[0];
+
+            if (
+                candidate.content &&
+                candidate.content.parts &&
+                candidate.content.parts.length > 0
+            ) {
+                aiText = candidate.content.parts[0].text;
+            }
+
+        }
+
+        else if (data.error) {
+
+            console.error("Gemini API error:", data.error.message);
+            aiText = "AI service error: " + data.error.message;
+
+        }
+
+        else {
+
             console.error("Unexpected Gemini response:", data);
+
         }
 
         return aiText;

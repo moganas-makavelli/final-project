@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         console.log("API KEY EXISTS:", !!process.env.GEMINI_API_KEY);
 
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: {
@@ -22,6 +22,7 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     contents: [
                         {
+                            role: "user",
                             parts: [{ text: prompt }],
                         },
                     ],
@@ -32,6 +33,13 @@ export default async function handler(req, res) {
         const data = await response.json();
 
         console.log("Gemini API response:", data);
+
+        // 🔥 IMPORTANT: handle errors properly
+        if (data.error) {
+            return res.status(500).json({
+                error: data.error.message,
+            });
+        }
 
         return res.status(200).json(data);
 

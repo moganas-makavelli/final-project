@@ -32,23 +32,20 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        console.log("Gemini API response:", data);
+        console.log("FULL Gemini response:", JSON.stringify(data, null, 2));
 
-        // 🔥 IMPORTANT: handle errors properly
+        // ✅ If Gemini returns an error, forward it properly
         if (data.error) {
             return res.status(500).json({
-                error: data.error.message,
+                error: data.error.message || "Unknown Gemini error",
+            });
+        }
+
+        // ✅ If response is missing candidates
+        if (!data.candidates) {
+            return res.status(500).json({
+                error: "No candidates returned from Gemini",
             });
         }
 
         return res.status(200).json(data);
-
-    } catch (error) {
-        console.error("Server error:", error);
-
-        return res.status(500).json({
-            error: "AI server failed",
-            details: error.message,
-        });
-    }
-}

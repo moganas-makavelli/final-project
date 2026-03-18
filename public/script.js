@@ -460,17 +460,15 @@ const getAIFinancialAdvice = async (question) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                prompt: question
-            })
+            body: JSON.stringify({ prompt: question })
         });
 
+        const rawText = await response.text();
         let data;
 
         try {
-            data = await response.json();
+            data = JSON.parse(rawText);
         } catch (error) {
-            const rawText = await response.text().catch(() => "");
             console.error("Invalid JSON response:", error);
             console.error("Raw response text:", rawText);
             return "AI service unavailable. Server did not return valid JSON.";
@@ -501,8 +499,6 @@ const getAIFinancialAdvice = async (question) => {
 
         const aiText =
             data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-            data?.candidates?.[0]?.output ||
-            data?.text ||
             "";
 
         if (!aiText) {

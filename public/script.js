@@ -460,10 +460,13 @@ const getAIFinancialAdvice = async (question) => {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ prompt: question })
+            body: JSON.stringify({
+                prompt: question
+            })
         });
 
         const rawText = await response.text();
+
         let data;
 
         try {
@@ -471,7 +474,7 @@ const getAIFinancialAdvice = async (question) => {
         } catch (error) {
             console.error("Invalid JSON response:", error);
             console.error("Raw response text:", rawText);
-            return "AI service unavailable. Server did not return valid JSON.";
+            return "AI service unavailable.";
         }
 
         console.log("Gemini response:", data);
@@ -479,38 +482,44 @@ const getAIFinancialAdvice = async (question) => {
         if (!response.ok) {
             const errorMessage =
                 data?.error?.message ||
-                data?.error ||
-                data?.details ||
                 data?.message ||
-                "Server error";
+                "AI request failed.";
             console.error("Gemini API error:", errorMessage);
             return "AI service error: " + errorMessage;
         }
 
-        if (data?.error) {
+        if (
+            data &&
+            data.candidates &&
+            Array.isArray(data.candidates) &&
+            data.candidates.length > 0
+        ) {
+            const candidate = data.candidates[0];
+
+            if (
+                candidate &&
+                candidate.content &&
+                Array.isArray(candidate.content.parts) &&
+                candidate.content.parts.length > 0 &&
+                candidate.content.parts[0].text
+            ) {
+                return candidate.content.parts[0].text;
+            }
+        }
+
+        if (data && data.error) {
             const errorMessage =
-                data.error.message ||
-                data.error.details ||
-                data.error.status ||
-                "Unknown Gemini error";
+                data.error.message || "Unexpected AI service error.";
             console.error("Gemini API error:", errorMessage);
             return "AI service error: " + errorMessage;
         }
 
-        const aiText =
-            data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-            "";
-
-        if (!aiText) {
-            console.error("Unexpected Gemini response:", data);
-            return "AI advice unavailable.";
-        }
-
-        return aiText;
+        console.error("Unexpected Gemini response:", data);
+        return "AI advice unavailable.";
 
     } catch (error) {
         console.error("Fetch error:", error);
-        return "AI error: Unable to connect to the server.";
+        return "AI error.";
     }
 };
 

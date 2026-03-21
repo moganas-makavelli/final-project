@@ -40,6 +40,7 @@ const SAVE_CHAT_TO_DB = true;
 // ---------------------------
 const $ = sel => document.querySelector(sel);
 const pick = (...ids) => ids.map(id => document.getElementById(id)).find(el => el !== null);
+const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
 
 // base UI
 const appDashboard = $("#app-dashboard");
@@ -307,41 +308,151 @@ const loadUserSettings = async userId => {
 // ---------------------------
 // Auth handling
 // ---------------------------
-const toggleAppVisibility = (loggedIn, user = null) => {
+const toggleAppVisibility = async (loggedIn, user = null) => {
     if (loggedIn && user) {
         currentUserId = user.uid;
-        currentUserName = (user.displayName || user.email.split("@")[0] || "User");
-        authModal && authModal.classList && authModal.classList.remove("active-modal");
-        appDashboard && (appDashboard.style.display = "flex");
-        loadUserSettings(currentUserId);
+
+        // Check if new user (first time)
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        const isNewUser = !userDoc.exists;
+
+        currentUserName = user.displayName || user.email.split("@")[0] || "User";
+
+        authModal.classList.remove("active-modal");
+        appDashboard.style.display = "flex";
+
+        // Dynamic greeting
+        const header = document.querySelector("header h2");
+        if (header) {
+            header.textContent = isNewUser
+                ? `Welcome, ${currentUserName}! 🎉`
+                : `Welcome back, ${currentUserName}!`;
+        }
+
+        // Save user if new
+        if (isNewUser) {
+            await db.collection("users").doc(user.uid).set({
+                displayName: currentUserName,
+                dailyLimit: 10000,
+                createdAt: new Date()
+            });
+        }
+
+        await loadUserSettings(currentUserId);
         subscribeToUserTransactions(currentUserId);
+
     } else {
-        if (userTxUnsubscribe) { try { userTxUnsubscribe(); } catch (e) { } userTxUnsubscribe = null; }
-        currentUserId = null; currentUserName = "Guest";
-        authModal && authModal.classList && authModal.classList.add("active-modal");
-        appDashboard && (appDashboard.style.display = "none");
-        balance = income = expenses = 0; categoryExpenses = {};
-        if (transactionList) transactionList.innerHTML = ""; if (allTransactionList) allTransactionList.innerHTML = "";
-        if (transactionTable) transactionTable.innerHTML = ""; updateUI();
-        if (expensesChart) { try { expensesChart.destroy(); } catch (e) { } expensesChart = null; }
+        if (userTxUnsubscribe) userTxUnsubscribe();
+
+        currentUserId = null;
+        currentUserName = "Guest";
+
+        authModal.classList.add("active-modal");
+        appDashboard.style.display = "none";
+
+        balance = income = expenses = 0;
+        categoryExpenses = {};
+
+        transactionList.innerHTML = "";
+        allTransactionList.innerHTML = "";
+
+        updateUI();
     }
 };
 auth.onAuthStateChanged(user => { if (user) toggleAppVisibility(true, user); else toggleAppVisibility(false); });
 
 // auth form submit (sign up / login handled via title toggle)
+function showAuthError(message) {
+    authMessage.style.display = "block";
+    authMessage.textContent = message;
+}
+
+function handleAuthError(error) {
+    let message = "Something went wrong.";
+
+    switch (error.code) {
+        case "auth/email-already-in-use":
+            message = "This email is already registered. Try logging in.";
+            break;
+        case "auth/invalid-email":
+            message = "Invalid email format.";
+            break;
+        case "auth/user-not-found":
+            message = "No account found with this email.";
+            break;
+        case "auth/wrong-password":
+            message = "Incorrect password.";
+            break;
+        case "auth/weak-password":
+            message = "Password should be at least 6 characters.";
+            break;
+        case "auth/too-many-requests":
+            message = "Too many attempts. Try again later.";
+            break;
+        default:
+            message = error.message;
+    }
+
+    showAuthError(message);
+}
+
+function showAuthError(message) {
+    authMessage.style.display = "block";
+    authMessage.textContent = message;
+}
+
+// ===========================
+// AUTH FORM SUBMIT HANDLER (ADD THIS)
+// ===========================
 if (authForm) {
     authForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("authEmail").value;
-        const password = document.getElementById("authPassword").value;
-        const confirmPassword = document.getElementById("authConfirmPassword") ? document.getElementById("authConfirmPassword").value : null;
-        authMessage && (authMessage.style.display = "none");
-        const isSignupMode = authTitle && authTitle.textContent && authTitle.textContent.toLowerCase().includes("create");
-        if (isSignupMode) {
-            if (password !== confirmPassword) { if (authMessage) { authMessage.style.display = "block"; authMessage.textContent = "Passwords do not match."; } return; }
-            try { await auth.createUserWithEmailAndPassword(email, password); } catch (err) { if (authMessage) { authMessage.style.display = "block"; authMessage.textContent = err.message; } }
-        } else {
-            try { await auth.signInWithEmailAndPassword(email, password); } catch (err) { if (authMessage) { authMessage.style.display = "block"; authMessage.textContent = "Login failed: " + err.message; } }
+
+        const email = document.getElementById("authEmail")?.value.trim();
+        const password = document.getElementById("authPassword")?.value.trim();
+        const confirmPassword = document.getElementById("confirmPassword")?.value.trim();
+
+        const isSignup = authTitle.textContent.toLowerCase().includes("create");
+
+        if (!email || !password) {
+            showAuthError("Please fill all fields.");
+            return;
+        }
+
+        // UX IMPROVEMENT 1: Disable button + loading text
+        authSubmitBtn.disabled = true;
+        authSubmitBtn.textContent = isSignup ? "Creating..." : "Logging in...";
+
+        try {
+            let userCredential;
+
+            if (isSignup) {
+                if (password !== confirmPassword) {
+                    showAuthError("Passwords do not match.");
+                    return;
+                }
+
+                userCredential = await auth.createUserWithEmailAndPassword(email, password);
+
+                // Save display name (optional improvement)
+                await userCredential.user.updateProfile({
+                    displayName: email.split("@")[0]
+                });
+
+            } else {
+                userCredential = await auth.signInWithEmailAndPassword(email, password);
+            }
+
+            showToast(isSignup ? "Account created!" : "Login successful!");
+
+            authForm.reset();
+
+        } catch (error) {
+            handleAuthError(error);
+        } finally {
+            // UX IMPROVEMENT 2: Restore button state
+            authSubmitBtn.disabled = false;
+            authSubmitBtn.textContent = isSignup ? "Sign Up" : "Login";
         }
     });
 }
@@ -760,6 +871,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const sectionEl = document.getElementById(targetSection);
             if (sectionEl) { sectionEl.style.display = "block"; sectionEl.classList.add("active-section"); }
             else console.error(`Section ${targetSection} not found`);
+            const authEmailInput = document.getElementById("authEmail");
+            if (authEmailInput) authEmailInput.focus();
         });
     });
     const defaultSection = document.getElementById("dashboard-section");

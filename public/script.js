@@ -396,10 +396,7 @@ function handleAuthError(error) {
     showAuthError(message);
 }
 
-function showAuthError(message) {
-    authMessage.style.display = "block";
-    authMessage.textContent = message;
-}
+
 
 // ===========================
 // AUTH FORM SUBMIT HANDLER (ADD THIS)

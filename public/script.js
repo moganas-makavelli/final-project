@@ -364,33 +364,39 @@ auth.onAuthStateChanged(user => { if (user) toggleAppVisibility(true, user); els
 // auth form submit (sign up / login handled via title toggle)
 function showAuthError(message) {
     authMessage.style.display = "block";
-    authMessage.textContent = message;
+    authMessage.textContent = typeof message === "string"
+        ? message
+        : "An error occurred. Please try again.";
 }
-
 function handleAuthError(error) {
-    let message = "Something went wrong.";
+    let message = "Something went wrong. Please try again.";
 
     switch (error.code) {
         case "auth/email-already-in-use":
             message = "This email is already registered. Try logging in.";
             break;
+
         case "auth/invalid-email":
             message = "Invalid email format.";
             break;
+
+        // 🔒 SECURITY FIX (merge both cases)
         case "auth/user-not-found":
-            message = "No account found with this email.";
-            break;
         case "auth/wrong-password":
-            message = "Incorrect password.";
+            message = "Invalid email or password.";
             break;
+
         case "auth/weak-password":
             message = "Password should be at least 6 characters.";
             break;
+
         case "auth/too-many-requests":
             message = "Too many attempts. Try again later.";
             break;
+
         default:
-            message = error.message;
+            console.error("Auth error:", error); // keep real error in console ONLY
+            message = "Login failed. Please try again.";
     }
 
     showAuthError(message);
@@ -416,7 +422,6 @@ if (authForm) {
             return;
         }
 
-        // UX IMPROVEMENT 1: Disable button + loading text
         authSubmitBtn.disabled = true;
         authSubmitBtn.textContent = isSignup ? "Creating..." : "Logging in...";
 
@@ -424,6 +429,7 @@ if (authForm) {
             let userCredential;
 
             if (isSignup) {
+                // ✅ ONLY validate confirm password for signup
                 if (password !== confirmPassword) {
                     showAuthError("Passwords do not match.");
                     return;
@@ -431,23 +437,21 @@ if (authForm) {
 
                 userCredential = await auth.createUserWithEmailAndPassword(email, password);
 
-                // Save display name (optional improvement)
                 await userCredential.user.updateProfile({
                     displayName: email.split("@")[0]
                 });
 
             } else {
+                // ✅ LOGIN
                 userCredential = await auth.signInWithEmailAndPassword(email, password);
             }
 
             showToast(isSignup ? "Account created!" : "Login successful!");
-
             authForm.reset();
 
         } catch (error) {
             handleAuthError(error);
         } finally {
-            // UX IMPROVEMENT 2: Restore button state
             authSubmitBtn.disabled = false;
             authSubmitBtn.textContent = isSignup ? "Sign Up" : "Login";
         }

@@ -309,55 +309,37 @@ const loadUserSettings = async userId => {
 // Auth handling
 // ---------------------------
 const toggleAppVisibility = async (loggedIn, user = null) => {
-    if (loggedIn && user) {
-        currentUserId = user.uid;
 
-        // Check if new user (first time)
-        const userDoc = await db.collection("users").doc(user.uid).get();
-        const isNewUser = !userDoc.exists;
+    if (toggleSignupLink) {
+        toggleSignupLink.addEventListener("click", (e) => {
+            e.preventDefault();
 
-        currentUserName = user.displayName || user.email.split("@")[0] || "User";
+            const isSignup = authTitle.textContent.toLowerCase().includes("create");
 
-        authModal.classList.remove("active-modal");
-        appDashboard.style.display = "flex";
+            if (isSignup) {
+                // SWITCH TO LOGIN
+                authTitle.textContent = "Login to Financial Dashboard";
+                authSubmitBtn.textContent = "Login";
 
-        // Dynamic greeting
-        const header = document.querySelector("header h2");
-        if (header) {
-            header.textContent = isNewUser
-                ? `Welcome, ${currentUserName}! 🎉`
-                : `Welcome back, ${currentUserName}!`;
-        }
+                if (confirmPasswordGroup) confirmPasswordGroup.style.display = "none";
 
-        // Save user if new
-        if (isNewUser) {
-            await db.collection("users").doc(user.uid).set({
-                displayName: currentUserName,
-                dailyLimit: 10000,
-                createdAt: new Date()
-            });
-        }
+                // ✅ FIX TEXT
+                toggleSignupLink.innerHTML = `Don't have an account? <span style="color:#6366f1;">Sign Up</span>`;
 
-        await loadUserSettings(currentUserId);
-        subscribeToUserTransactions(currentUserId);
+            } else {
+                // SWITCH TO SIGNUP
+                authTitle.textContent = "Create a New Account";
+                authSubmitBtn.textContent = "Sign Up";
 
-    } else {
-        if (userTxUnsubscribe) userTxUnsubscribe();
+                if (confirmPasswordGroup) confirmPasswordGroup.style.display = "block";
 
-        currentUserId = null;
-        currentUserName = "Guest";
-
-        authModal.classList.add("active-modal");
-        appDashboard.style.display = "none";
-
-        balance = income = expenses = 0;
-        categoryExpenses = {};
-
-        transactionList.innerHTML = "";
-        allTransactionList.innerHTML = "";
-
-        updateUI();
+                // ✅ FIX TEXT
+                toggleSignupLink.innerHTML = `Already have an account? <span style="color:#6366f1;">Log In</span>`;
+            }
+        });
     }
+
+
 };
 auth.onAuthStateChanged(user => { if (user) toggleAppVisibility(true, user); else toggleAppVisibility(false); });
 
@@ -377,17 +359,23 @@ function handleAuthError(error) {
             break;
 
         case "auth/invalid-email":
-            message = "Invalid email format.";
+            message = "Invalid email format. Example: name@gmail.com";
             break;
 
-        // 🔒 SECURITY FIX (merge both cases)
         case "auth/user-not-found":
+            message = "No account found with this email.";
+            break;
+
         case "auth/wrong-password":
-            message = "Invalid email or password.";
+            message = "Incorrect password.";
             break;
 
         case "auth/weak-password":
-            message = "Password should be at least 6 characters.";
+            message = "Password must be at least 6 characters.";
+            break;
+
+        case "auth/network-request-failed":
+            message = "Network error. Check your internet connection.";
             break;
 
         case "auth/too-many-requests":
@@ -395,12 +383,22 @@ function handleAuthError(error) {
             break;
 
         default:
-            console.error("Auth error:", error); // keep real error in console ONLY
-            message = "Login failed. Please try again.";
+            console.error("Auth error:", error);
+            message = "Authentication failed. Try again.";
     }
 
     showAuthError(message);
 }
+
+//Clear error message when user starts typing:
+["authEmail", "authPassword", "confirmPassword"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener("input", () => {
+            if (authMessage) authMessage.style.display = "none";
+        });
+    }
+});
 
 
 
@@ -428,10 +426,12 @@ if (authForm) {
         try {
             let userCredential;
 
+
             if (isSignup) {
-                // ✅ ONLY validate confirm password for signup
                 if (password !== confirmPassword) {
                     showAuthError("Passwords do not match.");
+                    authSubmitBtn.disabled = false;
+                    authSubmitBtn.textContent = "Sign Up";
                     return;
                 }
 
@@ -442,7 +442,6 @@ if (authForm) {
                 });
 
             } else {
-                // ✅ LOGIN
                 userCredential = await auth.signInWithEmailAndPassword(email, password);
             }
 

@@ -309,35 +309,54 @@ const loadUserSettings = async userId => {
 // Auth handling
 // ---------------------------
 const toggleAppVisibility = async (loggedIn, user = null) => {
+    if (loggedIn && user) {
+        currentUserId = user.uid;
+        currentUserName = user.displayName || user.email.split("@")[0] || "User";
 
-    if (toggleSignupLink) {
-        toggleSignupLink.addEventListener("click", (e) => {
-            e.preventDefault();
+        if (authModal) authModal.style.display = "none";
+        if (appDashboard) appDashboard.style.display = "flex";
 
-            const isSignup = authTitle.textContent.toLowerCase().includes("create");
+        await loadUserSettings(user.uid);
+        subscribeToUserTransactions(user.uid);
 
-            if (isSignup) {
-                authTitle.textContent = "Login to Financial Dashboard";
-                authSubmitBtn.textContent = "Login";
+        updateUI();
 
-                if (confirmPasswordGroup) confirmPasswordGroup.style.display = "none";
+    } else {
+        currentUserId = null;
+        currentUserName = "Guest";
+        balance = 0;
+        income = 0;
+        expenses = 0;
+        categoryExpenses = {};
 
-                toggleSignupLink.innerHTML = `Don't have an account? <span style="color:#6366f1;">Sign Up</span>`;
+        if (authModal) authModal.style.display = "flex";
+        if (appDashboard) appDashboard.style.display = "none";
 
-            } else {
-                authTitle.textContent = "Create a New Account";
-                authSubmitBtn.textContent = "Sign Up";
-
-                if (confirmPasswordGroup) confirmPasswordGroup.style.display = "block";
-
-                toggleSignupLink.innerHTML = `Already have an account? <span style="color:#6366f1;">Log In</span>`;
-            }
-        });
+        updateUI();
     }
-
-
 };
 auth.onAuthStateChanged(user => { if (user) toggleAppVisibility(true, user); else toggleAppVisibility(false); });
+
+if (toggleSignupLink) {
+    toggleSignupLink.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const isSignup = authTitle.textContent.toLowerCase().includes("create");
+
+        if (isSignup) {
+            authTitle.textContent = "Login to Financial Dashboard";
+            authSubmitBtn.textContent = "Login";
+            if (confirmPasswordGroup) confirmPasswordGroup.style.display = "none";
+            toggleSignupLink.innerHTML = `Don't have an account? <span style="color:#6366f1;">Sign Up</span>`;
+        } else {
+            authTitle.textContent = "Create a New Account";
+            authSubmitBtn.textContent = "Sign Up";
+            if (confirmPasswordGroup) confirmPasswordGroup.style.display = "block";
+            toggleSignupLink.innerHTML = `Already have an account? <span style="color:#6366f1;">Log In</span>`;
+        }
+    });
+}
+
 
 // auth form submit (sign up / login handled via title toggle)
 function showAuthError(message) {
@@ -422,7 +441,6 @@ if (authForm) {
         try {
             let userCredential;
 
-
             if (isSignup) {
                 if (password !== confirmPassword) {
                     showAuthError("Passwords do not match.");
@@ -442,6 +460,7 @@ if (authForm) {
             }
 
             showToast(isSignup ? "Account created!" : "Login successful!");
+            await toggleAppVisibility(true, userCredential.user);
             authForm.reset();
 
         } catch (error) {
@@ -457,8 +476,8 @@ if (authForm) {
 if (logoutBtn) logoutBtn.addEventListener("click", () => logoutConfirmModal.style.display = "flex");
 if (confirmLogoutBtn) confirmLogoutBtn.addEventListener("click", async () => { logoutConfirmModal.style.display = "none"; try { await auth.signOut(); } catch (e) { console.error(e); } });
 if (cancelLogoutBtn) cancelLogoutBtn.addEventListener("click", () => logoutConfirmModal.style.display = "none");
-// toggle signup link
-if (toggleSignupLink) toggleSignupLink.addEventListener("click", (e) => { e.preventDefault(); const isSignup = authTitle && authTitle.textContent && authTitle.textContent.toLowerCase().includes("create"); if (isSignup) { authTitle.textContent = "Login to Financial Dashboard"; authSubmitBtn && (authSubmitBtn.textContent = "Login"); confirmPasswordGroup && (confirmPasswordGroup.style.display = "none"); toggleSignupLink.innerHTML = "Sign Up"; } else { authTitle.textContent = "Create a New Account"; authSubmitBtn && (authSubmitBtn.textContent = "Sign Up"); confirmPasswordGroup && (confirmPasswordGroup.style.display = "block"); toggleSignupLink.innerHTML = "Log In"; } });
+
+
 
 // ---------------------------
 // Transaction form handling

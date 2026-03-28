@@ -317,23 +317,19 @@ const toggleAppVisibility = async (loggedIn, user = null) => {
             const isSignup = authTitle.textContent.toLowerCase().includes("create");
 
             if (isSignup) {
-                // SWITCH TO LOGIN
                 authTitle.textContent = "Login to Financial Dashboard";
                 authSubmitBtn.textContent = "Login";
 
                 if (confirmPasswordGroup) confirmPasswordGroup.style.display = "none";
 
-                // ✅ FIX TEXT
                 toggleSignupLink.innerHTML = `Don't have an account? <span style="color:#6366f1;">Sign Up</span>`;
 
             } else {
-                // SWITCH TO SIGNUP
                 authTitle.textContent = "Create a New Account";
                 authSubmitBtn.textContent = "Sign Up";
 
                 if (confirmPasswordGroup) confirmPasswordGroup.style.display = "block";
 
-                // ✅ FIX TEXT
                 toggleSignupLink.innerHTML = `Already have an account? <span style="color:#6366f1;">Log In</span>`;
             }
         });

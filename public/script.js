@@ -426,7 +426,7 @@ if (authForm) {
 
         const email = document.getElementById("authEmail")?.value.trim();
         const password = document.getElementById("authPassword")?.value.trim();
-        const confirmPassword = document.getElementById("confirmPassword")?.value.trim();
+        const confirmPassword = document.getElementById("authConfirmPassword")?.value.trim();
 
         const isSignup = authTitle.textContent.toLowerCase().includes("create");
 

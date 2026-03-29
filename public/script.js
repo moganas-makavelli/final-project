@@ -441,35 +441,40 @@ if (authForm) {
         try {
             let userCredential;
 
-            if (isSignup) {
-                if (password !== confirmPassword) {
-                    showAuthError("Passwords do not match.");
-                    authSubmitBtn.disabled = false;
-                    authSubmitBtn.textContent = "Sign Up";
-                    return;
-                }
-
-                userCredential = await auth.createUserWithEmailAndPassword(email, password);
-
-                await userCredential.user.updateProfile({
-                    displayName: email.split("@")[0]
-                });
-
-            } else {
-                userCredential = await auth.signInWithEmailAndPassword(email, password);
+            if (!confirmPassword) {
+                showAuthError("Please confirm your password.");
+                authSubmitBtn.disabled = false;
+                authSubmitBtn.textContent = "Sign Up";
+                return;
             }
 
-            showToast(isSignup ? "Account created!" : "Login successful!");
-            await toggleAppVisibility(true, userCredential.user);
-            authForm.reset();
+            if (password !== confirmPassword) {
+                showAuthError("Passwords do not match.");
+                authSubmitBtn.disabled = false;
+                authSubmitBtn.textContent = "Sign Up";
+                return;
+            }
+            userCredential = await auth.createUserWithEmailAndPassword(email, password);
 
-        } catch (error) {
-            handleAuthError(error);
-        } finally {
-            authSubmitBtn.disabled = false;
-            authSubmitBtn.textContent = isSignup ? "Sign Up" : "Login";
+            await userCredential.user.updateProfile({
+                displayName: email.split("@")[0]
+            });
+
+        } else {
+            userCredential = await auth.signInWithEmailAndPassword(email, password);
         }
-    });
+
+        showToast(isSignup ? "Account created!" : "Login successful!");
+        await toggleAppVisibility(true, userCredential.user);
+        authForm.reset();
+
+    } catch (error) {
+        handleAuthError(error);
+    } finally {
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.textContent = isSignup ? "Sign Up" : "Login";
+    }
+});
 }
 
 // logout

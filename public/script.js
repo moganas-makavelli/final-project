@@ -314,10 +314,11 @@ const toggleAppVisibility = async (loggedIn, user = null, authType = "login") =>
         currentUserName = user.displayName || user.email.split("@")[0] || "User";
 
         if (authType === "signup") {
-            showToast(`Account created successfully! Welcome, ${currentUserName} 🎉`);
-        } else {
+            showToast(`Welcome, ${currentUserName}! 🎉`);
+        } else if (authType === "login") {
             showToast(`Welcome back, ${currentUserName}`);
         }
+        // "auto" → DO NOTHING (prevents duplicate message on refresh)
 
         if (authModal) authModal.style.display = "none";
         if (appDashboard) appDashboard.style.display = "flex";
@@ -341,7 +342,13 @@ const toggleAppVisibility = async (loggedIn, user = null, authType = "login") =>
         updateUI();
     }
 };
-auth.onAuthStateChanged(user => { if (user) toggleAppVisibility(true, user); else toggleAppVisibility(false); });
+auth.onAuthStateChanged(user => {
+    if (user) {
+        toggleAppVisibility(true, user, "auto"); // not login, not signup
+    } else {
+        toggleAppVisibility(false);
+    }
+});
 
 if (toggleSignupLink) {
     toggleSignupLink.addEventListener("click", (e) => {

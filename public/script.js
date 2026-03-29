@@ -308,10 +308,16 @@ const loadUserSettings = async userId => {
 // ---------------------------
 // Auth handling
 // ---------------------------
-const toggleAppVisibility = async (loggedIn, user = null) => {
+const toggleAppVisibility = async (loggedIn, user = null, authType = "login") => {
     if (loggedIn && user) {
         currentUserId = user.uid;
         currentUserName = user.displayName || user.email.split("@")[0] || "User";
+
+        if (authType === "signup") {
+            showToast(`Account created successfully! Welcome, ${currentUserName} 🎉`);
+        } else {
+            showToast(`Welcome back, ${currentUserName}`);
+        }
 
         if (authModal) authModal.style.display = "none";
         if (appDashboard) appDashboard.style.display = "flex";
@@ -465,8 +471,8 @@ if (authForm) {
                 userCredential = await auth.signInWithEmailAndPassword(email, password);
             }
 
-            showToast(isSignup ? "Account created!" : "Login successful!");
-            await toggleAppVisibility(true, userCredential.user);
+
+            await toggleAppVisibility(true, userCredential.user, isSignup ? "signup" : "login");
             authForm.reset();
 
         } catch (error) {

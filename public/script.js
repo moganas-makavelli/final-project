@@ -469,18 +469,14 @@ if (authForm) {
         try {
             let userCredential;
             if (isSignup) {
-                isNewUser = true;
+
                 if (!confirmPassword) {
                     showAuthError("Please confirm your password.");
-                    authSubmitBtn.disabled = false;
-                    authSubmitBtn.textContent = "Sign Up";
                     return;
                 }
 
                 if (password !== confirmPassword) {
                     showAuthError("Passwords do not match.");
-                    authSubmitBtn.disabled = false;
-                    authSubmitBtn.textContent = "Sign Up";
                     return;
                 }
 
@@ -494,9 +490,7 @@ if (authForm) {
                 userCredential = await auth.signInWithEmailAndPassword(email, password);
             }
 
-
             await toggleAppVisibility(true, userCredential.user, isSignup ? "signup" : "login");
-            authForm.reset();
 
         } catch (error) {
             handleAuthError(error);

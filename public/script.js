@@ -26,6 +26,7 @@ const db = firebase.firestore();
 // APP STATE
 // ---------------------------
 let currentUserId = null;
+let lastAuthType = "auto"; // login | signup | auto
 let currentUserName = "Guest";
 let balance = 0, income = 0, expenses = 0;
 let categoryExpenses = {};
@@ -313,8 +314,22 @@ const toggleAppVisibility = async (loggedIn, user = null, authType = "login") =>
         currentUserId = user.uid;
         currentUserName = user.displayName || user.email.split("@")[0] || "User";
 
+        const welcomeEl = document.getElementById("welcomeText");
+
+        if (welcomeEl) {
+            if (authType === "signup") {
+                welcomeEl.innerText = `Welcome, ${currentUserName}! 🎉`;
+            } else if (authType === "login") {
+                welcomeEl.innerText = `Welcome back, ${currentUserName}!`;
+            } else {
+                welcomeEl.innerText = `Welcome back, ${currentUserName}!`;
+            }
+        }
+
+        lastAuthType = authType;
+
         if (authType === "signup") {
-            showToast(`Welcome, ${currentUserName}! 🎉`);
+            showToast(`Account successfully created! Welcome, ${currentUserName}! 🎉`);
         } else if (authType === "login") {
             showToast(`Welcome back, ${currentUserName}`);
         }
@@ -454,6 +469,7 @@ if (authForm) {
         try {
             let userCredential;
             if (isSignup) {
+                isNewUser = true;
                 if (!confirmPassword) {
                     showAuthError("Please confirm your password.");
                     authSubmitBtn.disabled = false;
